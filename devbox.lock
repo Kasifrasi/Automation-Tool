@@ -969,6 +969,54 @@
         }
       }
     },
+    "prek@latest": {
+      "last_modified": "2026-03-10T02:35:18Z",
+      "resolved": "github:NixOS/nixpkgs/e607cb5360ff1234862ac9f8839522becb853bb9#prek",
+      "source": "devbox-search",
+      "version": "0.3.4",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/1ryhv3vsfxxrp4hjqnc6n6i7dc0fhyn7-prek-0.3.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/1ryhv3vsfxxrp4hjqnc6n6i7dc0fhyn7-prek-0.3.4"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/z75w6qdfqzpm6mds2ysicvzajnn5mn4z-prek-0.3.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/z75w6qdfqzpm6mds2ysicvzajnn5mn4z-prek-0.3.4"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/mfycsmnssqpgx8jwdcp8g5mc8zb14lfx-prek-0.3.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/mfycsmnssqpgx8jwdcp8g5mc8zb14lfx-prek-0.3.4"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/a6ijavy472m17cy5f2axa8k7c9vl25z0-prek-0.3.4",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/a6ijavy472m17cy5f2axa8k7c9vl25z0-prek-0.3.4"
+        }
+      }
+    },
     "rustup@latest": {
       "last_modified": "2026-02-23T15:40:43Z",
       "plugin_version": "0.0.1",

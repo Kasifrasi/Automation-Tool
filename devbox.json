@@ -27,7 +27,8 @@
     "xorg.libXcursor@latest",
     "xorg.libXi@latest",
     "xorg.libXrandr@latest",
-    "mesa@latest"
+    "mesa@latest",
+    "prek@latest"
   ],
   "env": {
     "CC": "clang",
