@@ -134,13 +134,4 @@ export component MainWindow inherits Window {
         // ================================================================
         if root.current-page == "folder" : FolderPage {}
     }
-    if root.current_page == "home" : VerticalLayout {
-        alignment: end;
-        HorizontalLayout {
-            alignment: end;
-            AboutSlint {
-                max-height: 20px;
-            }
-        }
-    }
 }

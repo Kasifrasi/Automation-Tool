@@ -1,0 +1,51 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.3",
+  "version": 1,
+  "serialNumber": "urn:uuid:be161104-d37d-496c-9bf3-17536fb63802",
+  "metadata": {
+    "timestamp": "2026-03-17T05:48:08.076157272Z",
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "cargo-cyclonedx",
+        "version": "0.5.7"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "path+file:///home/ardit/repos/Arbeit/Automation-Tool/budget_scanner#0.1.0",
+      "name": "budget_scanner",
+      "version": "0.1.0",
+      "scope": "required",
+      "licenses": [
+        {
+          "expression": "MIT OR Apache-2.0"
+        }
+      ],
+      "purl": "pkg:cargo/budget_scanner@0.1.0?download_url=file://.",
+      "components": [
+        {
+          "type": "application",
+          "bom-ref": "path+file:///home/ardit/repos/Arbeit/Automation-Tool/budget_scanner#0.1.0 bin-target-0",
+          "name": "budget_scanner",
+          "version": "0.1.0",
+          "purl": "pkg:cargo/budget_scanner@0.1.0?download_url=file://.#src/main.rs"
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:rustc:sbom:target:triple",
+        "value": "x86_64-unknown-linux-gnu"
+      }
+    ]
+  },
+  "components": [],
+  "dependencies": [
+    {
+      "ref": "path+file:///home/ardit/repos/Arbeit/Automation-Tool/budget_scanner#0.1.0",
+      "dependsOn": []
+    }
+  ]
+}

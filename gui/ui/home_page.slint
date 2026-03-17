@@ -1,4 +1,4 @@
-import { Palette } from "std-widgets.slint";
+import { Palette, AboutSlint } from "std-widgets.slint";
 
 component MenuCard inherits Rectangle {
     in property <string> title;
@@ -13,7 +13,9 @@ component MenuCard inherits Rectangle {
     height: 140px;
 
     ta := TouchArea {
-        clicked => { root.clicked(); }
+        clicked => {
+            root.clicked();
+        }
         mouse-cursor: pointer;
     }
 
@@ -29,6 +31,7 @@ component MenuCard inherits Rectangle {
             colorize: Palette.accent-background;
             horizontal-alignment: center;
         }
+
         Text {
             text: root.title;
             font-size: 16px;
@@ -36,6 +39,7 @@ component MenuCard inherits Rectangle {
             color: Palette.foreground;
             horizontal-alignment: center;
         }
+
         Text {
             text: root.description;
             font-size: 13px;
@@ -51,7 +55,10 @@ export component HomePage inherits VerticalLayout {
     callback navigate(string);
 
     spacing: 20px;
-    alignment: center;
+
+    Rectangle {
+        vertical-stretch: 1;
+    }
 
     // Titel
     VerticalLayout {
@@ -63,6 +70,7 @@ export component HomePage inherits VerticalLayout {
             color: Palette.foreground;
             horizontal-alignment: center;
         }
+
         Text {
             text: "Werkzeug auswählen";
             font-size: 14px;
@@ -82,21 +90,40 @@ export component HomePage inherits VerticalLayout {
             description: "Finanzberichtsvorlagen erstellen";
             icon: @image-url("icons/chart.svg");
             width: 260px;
-            clicked => { root.navigate("fb"); }
+            clicked => {
+                root.navigate("fb");
+            }
         }
+
         MenuCard {
             title: "Budget zu FB";
             description: "Budgets in Finanzberichte konvertieren";
             icon: @image-url("icons/convert.svg");
             width: 260px;
-            clicked => { root.navigate("budget"); }
+            clicked => {
+                root.navigate("budget");
+            }
         }
+
         MenuCard {
             title: "Ordner erstellen";
             description: "Erstellt Ordner mit Prüfvorlage";
             icon: @image-url("icons/folder.svg");
             width: 260px;
-            clicked => { root.navigate("folder"); }
+            clicked => {
+                root.navigate("folder");
+            }
+        }
+    }
+
+    Rectangle {
+        vertical-stretch: 1;
+    }
+
+    HorizontalLayout {
+        alignment: end;
+        AboutSlint {
+            width: 120px;
         }
     }
 }
