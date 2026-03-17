@@ -1,4 +1,4 @@
-import { Palette, Switch } from "std-widgets.slint";
+import { Palette, Switch, AboutSlint } from "std-widgets.slint";
 export { Palette }
 import { FBPage } from "fb_page.slint";
 import { BudgetPage } from "budget_page.slint";
@@ -133,5 +133,14 @@ export component MainWindow inherits Window {
         // Seite 3: Ordner erstellen
         // ================================================================
         if root.current-page == "folder" : FolderPage {}
+    }
+    if root.current_page == "home" : VerticalLayout {
+        alignment: end;
+        HorizontalLayout {
+            alignment: end;
+            AboutSlint {
+                max-height: 20px;
+            }
+        }
     }
 }
