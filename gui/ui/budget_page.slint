@@ -1,0 +1,103 @@
+import { Button, CheckBox, LineEdit, Palette, StandardTableView } from "std-widgets.slint";
+import { Card, StatusBanner } from "components.slint";
+import { BudgetState } from "state.slint";
+
+export component BudgetPage inherits VerticalLayout {
+    spacing: 10px;
+    vertical-stretch: 1;
+
+    // --- Layout ---
+
+    // Status
+    if BudgetState.status-type != "idle" : StatusBanner {
+        status-type: BudgetState.status-type;
+        status-message: BudgetState.status-message;
+        dismiss => { BudgetState.dismiss-status(); }
+    }
+
+    // Pfade & Optionen
+    Card {
+        title: "Pfade & Optionen";
+        VerticalLayout {
+            spacing: 10px;
+
+            // Quellordner
+            VerticalLayout {
+                spacing: 4px;
+                Text { text: "Quellordner (Excel-Dateien)"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                HorizontalLayout {
+                    spacing: 8px;
+                    LineEdit { text <=> BudgetState.src-folder; read-only: true; placeholder-text: "Bitte wählen..."; horizontal-stretch: 1; }
+                    Button { text: "Quelle..."; clicked => { BudgetState.select-src(); } }
+                }
+            }
+
+            // Ausgabeordner
+            VerticalLayout {
+                spacing: 4px;
+                Text { text: "Ausgabeordner"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                HorizontalLayout {
+                    spacing: 8px;
+                    LineEdit { text <=> BudgetState.out-folder; read-only: true; placeholder-text: "Bitte wählen..."; horizontal-stretch: 1; }
+                    Button { text: "Ausgabe..."; clicked => { BudgetState.select-out(); } }
+                }
+            }
+
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+
+            // Optionen
+            HorizontalLayout {
+                spacing: 16px;
+
+                VerticalLayout {
+                    spacing: 4px;
+                    Text { text: "Export-Name"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                    LineEdit { text <=> BudgetState.filename; placeholder-text: "v2_scan"; width: 200px; }
+                }
+
+                VerticalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    Text { text: "Optionen"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                    HorizontalLayout {
+                        spacing: 16px;
+                        CheckBox { text: ".xlsm scannen"; checked <=> BudgetState.include-xlsm; }
+                        CheckBox { text: "TXT Export"; checked <=> BudgetState.export-txt; }
+                        CheckBox { text: "CSV Export"; checked <=> BudgetState.export-csv; }
+                    }
+                }
+            }
+        }
+    }
+
+    // Ergebnis-Tabelle
+    Card {
+        title: "Ergebnisse";
+        vertical-stretch: 1;
+
+        StandardTableView {
+            columns: BudgetState.table-columns;
+            rows: BudgetState.table-data;
+        }
+    }
+
+    // Aktionsleiste
+    HorizontalLayout {
+        spacing: 12px;
+
+        Button { text: "Zurücksetzen"; clicked => { BudgetState.do-reset(); } }
+
+        Rectangle { horizontal-stretch: 1; }
+
+        Button { text: "Ansicht → TXT"; clicked => { BudgetState.do-export-txt(); } }
+        Button { text: "Ansicht → Excel"; clicked => { BudgetState.do-export-excel(); } }
+
+        Button {
+            text: BudgetState.status-type == "pending" ? "Scannt..." : "Scan starten (F5)";
+            primary: true;
+            enabled: BudgetState.src-folder != "" && BudgetState.out-folder != "" && BudgetState.status-type != "pending";
+            clicked => { BudgetState.scan(); }
+            width: 200px;
+        }
+    }
+}

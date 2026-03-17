@@ -1,0 +1,22 @@
+[[repos]]
+repo = "local"
+hooks = [
+    { 
+        id = "generate-third-party-html", 
+        name = "Update Third Party Licenses HTML", 
+        entry = "bash -c 'cargo about generate about.hbs > third-party-licenses.html && git add third-party-licenses.html'", 
+        language = "system", 
+        files = "Cargo\\.(toml|lock)$", 
+        pass_filenames = false 
+    },
+
+    { 
+        id = "generate-sbom", 
+        name = "Update CycloneDX SBOM", 
+        # Wildcard fängt die von cargo cyclonedx generierte Datei sicher ein
+        entry = "bash -c 'cargo cyclonedx --format json && git add *.cdx.json'", 
+        language = "system", 
+        files = "Cargo\\.(toml|lock)$", 
+        pass_filenames = false 
+    }
+]

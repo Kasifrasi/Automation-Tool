@@ -1,0 +1,209 @@
+import { Palette, LineEdit } from "std-widgets.slint";
+
+// ─── Wiederverwendbare Card-Komponente ───
+export component Card inherits Rectangle {
+    in property <string> title;
+    in property <string> subtitle: "";
+
+    border-radius: 10px;
+    background: Palette.control-background;
+    border-width: 1px;
+    border-color: Palette.border;
+
+    VerticalLayout {
+        padding: 14px;
+        spacing: 8px;
+
+        if root.title != "" : VerticalLayout {
+            spacing: 2px;
+            Text {
+                text: root.title;
+                font-size: 13px;
+                font-weight: 700;
+                color: Palette.foreground;
+            }
+            if root.subtitle != "" : Text {
+                text: root.subtitle;
+                font-size: 13px;
+                color: Palette.foreground;
+                opacity: 0.5;
+            }
+        }
+
+        if root.title != "" : Rectangle {
+            height: 1px;
+            background: Palette.border;
+            opacity: 0.4;
+        }
+
+        @children
+    }
+}
+
+// ─── Nav-Button ───
+export component NavButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> active: false;
+    callback clicked();
+
+    height: 36px;
+    border-radius: 8px;
+    background: root.active ? Palette.accent-background : transparent;
+
+    ta := TouchArea {
+        clicked => { root.clicked(); }
+        mouse-cursor: pointer;
+    }
+
+    HorizontalLayout {
+        padding-left: 16px;
+        padding-right: 16px;
+        alignment: center;
+        Text {
+            text: root.label;
+            font-size: 13px;
+            font-weight: root.active ? 700 : 500;
+            color: root.active ? Palette.accent-foreground : Palette.foreground;
+            vertical-alignment: center;
+            opacity: root.active ? 1.0 : 0.7;
+        }
+    }
+}
+
+// ─── Status-Banner (wiederverwendbar) ───
+export component StatusBanner inherits Rectangle {
+    in property <string> status-type;
+    in property <string> status-message;
+    callback dismiss();
+
+    visible: status-type != "idle";
+    border-radius: 8px;
+    background: status-type == "error"
+        ? Palette.foreground.transparentize(0.92)
+        : Palette.accent-background.transparentize(0.85);
+    border-width: 1px;
+    border-color: status-type == "error"
+        ? Palette.foreground.transparentize(0.8)
+        : Palette.accent-background.transparentize(0.5);
+
+    HorizontalLayout {
+        padding-left: 14px;
+        padding-right: 14px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        spacing: 10px;
+
+        Text {
+            text: root.status-type == "success" ? "✓ Erfolg"
+                : root.status-type == "error" ? "⚠ Fehler"
+                : "⟳ Wird verarbeitet...";
+            font-weight: 700;
+            font-size: 13px;
+            color: root.status-type == "error"
+                ? Palette.foreground.darker(0.1)
+                : Palette.accent-background.darker(0.3);
+            vertical-alignment: center;
+        }
+        Text {
+            text: root.status-message;
+            font-size: 13px;
+            color: Palette.foreground;
+            opacity: 0.8;
+            vertical-alignment: center;
+            horizontal-stretch: 1;
+            wrap: word-wrap;
+        }
+        if root.status-type == "success" : TouchArea {
+            width: 24px;
+            mouse-cursor: pointer;
+            clicked => { root.dismiss(); }
+            Text {
+                text: "✕";
+                font-size: 14px;
+                font-weight: 700;
+                color: Palette.foreground;
+                opacity: 0.5;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+    }
+}
+
+// ─── Custom SpinBox mit festen Button-Positionen und editierbarem Feld ───
+export component CategorySpinBox inherits HorizontalLayout {
+    in-out property <int> value: 0;
+    in property <int> minimum: 0;
+    in property <int> maximum: 999;
+
+    spacing: 2px;
+
+    // Editierbares Zahlenfeld
+    LineEdit {
+        horizontal-stretch: 1;
+        input-type: InputType.number;
+        horizontal-alignment: right;
+        text: root.value;
+        edited(text) => {
+            if (text == "") {
+                root.value = 0;
+            } else {
+                root.value = max(root.minimum, min(root.maximum, text.to-float()));
+            }
+        }
+    }
+
+    // Minus-Button
+    Rectangle {
+        width: 26px;
+        border-radius: 4px;
+        background: minus-ta.has-hover ? Palette.control-background.darker(0.1) : Palette.control-background;
+        border-width: 1px;
+        border-color: Palette.border;
+
+        minus-ta := TouchArea {
+            mouse-cursor: pointer;
+            clicked => {
+                if root.value > root.minimum {
+                    root.value -= 1;
+                }
+            }
+        }
+
+        Text {
+            text: "−";
+            font-size: 16px;
+            font-weight: 700;
+            color: Palette.foreground;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+
+    // Plus-Button
+    Rectangle {
+        width: 26px;
+        border-radius: 4px;
+        background: plus-ta.has-hover ? Palette.control-background.darker(0.1) : Palette.control-background;
+        border-width: 1px;
+        border-color: Palette.border;
+
+        plus-ta := TouchArea {
+            mouse-cursor: pointer;
+            clicked => {
+                if root.value < root.maximum {
+                    root.value += 1;
+                }
+            }
+        }
+
+        Text {
+            text: "+";
+            font-size: 16px;
+            font-weight: 700;
+            color: Palette.foreground;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}

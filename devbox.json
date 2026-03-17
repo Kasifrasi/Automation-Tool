@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": [
+    "rustup@latest",
+    "slint-lsp",
+    "cargo-expand@latest",
+    "cargo-license@latest",
+    "cargo-about@latest",
+    "cargo-llvm-cov@latest",
+    "cargo-audit@latest",
+    "cargo-nextest@latest",
+    "cargo-deny@latest",
+    "cargo-cyclonedx@latest",
+    "cargo-edit@latest",
+    "pkg-config@latest",
+    "mold@latest",
+    "clang@latest",
+    "sccache@latest",
+    "bacon@latest",
+    "libiconv@latest",
+    "fontconfig@latest",
+    "nixpkgs#fontconfig.dev",
+    "wayland@latest",
+    "libxkbcommon@latest",
+    "libGL@latest",
+    "xorg.libX11@latest",
+    "xorg.libXcursor@latest",
+    "xorg.libXi@latest",
+    "xorg.libXrandr@latest",
+    "mesa@latest"
+  ],
+  "env": {
+    "CC": "clang",
+    "CXX": "clang++",
+    "CFLAGS": "-fno-lto",
+    "CXXFLAGS": "-fno-lto",
+    "RUSTC_WRAPPER": "sccache",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER": "clang",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C link-arg=-fuse-ld=mold",
+    "SLINT_BACKEND": "winit-software",
+    "SLINT_LIVE_PREVIEW": "1"
+  },
+  "shell": {
+    "init_hook": [
+      "rustup default stable",
+      "rustup component add rust-src rust-analyzer",
+      "if [ -d '.git' ] && command -v prek > /dev/null; then prek install || true; fi",
+      "export LD_LIBRARY_PATH=\"$DEVBOX_PACKAGES_DIR/lib:/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH\"",
+      "echo '🦀 Rust Dev Workspace | 🛡️ prek Hooks geladen via Devbox'"
+    ],
+    "scripts": {
+      "test": "cargo nextest run",
+      "lint": "cargo clippy",
+      "fmt": "cargo fmt"
+    }
+  }
+}

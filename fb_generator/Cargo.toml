@@ -1,0 +1,46 @@
+[package]
+name = "fb_generator"
+description = "High-performance Excel financial report generator (XLSX) with formulas, formatting, and workbook protection"
+readme = "README.md"
+keywords = ["excel", "xlsx", "financial-report", "rust-xlsxwriter"]
+categories = ["finance", "template-engine"]
+
+# Geerbt vom Workspace
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["rlib"]
+name = "fb_generator"
+
+[features]
+serde = ["dep:serde"]
+
+[dependencies]
+# Serde wird vom Workspace geholt und hier nur als optional markiert
+serde = { workspace = true, optional = true }
+rust_xlsxwriter = "0.94.0"
+zip = "8.1.0"
+quick-xml = "0.39"
+sha2 = "0.10"
+base64 = "0.22"
+getrandom = "0.4.1"
+byteorder = "1.5"
+tempfile = "3"
+ironcalc_base = "0.7.1"
+
+[dev-dependencies]
+criterion = { version = "0.8", features = ["html_reports"] }
+rayon = "1.11"
+serde_json = "1"
+sysinfo = "0.38"
+
+[[bench]]
+name = "report_generation"
+harness = false
+
+[[bench]]
+name = "update_readme"
+harness = false

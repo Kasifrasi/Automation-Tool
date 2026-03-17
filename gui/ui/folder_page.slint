@@ -1,0 +1,96 @@
+import { Button, LineEdit, Palette } from "std-widgets.slint";
+import { Card, StatusBanner } from "components.slint";
+import { FolderState } from "state.slint";
+
+export component FolderPage inherits VerticalLayout {
+    spacing: 20px;
+    vertical-stretch: 1;
+
+    // Status Anzeige
+    if FolderState.status-type != "idle" : StatusBanner {
+        status-type: FolderState.status-type;
+        status-message: FolderState.status-message;
+        dismiss => { FolderState.dismiss-status(); }
+    }
+
+    Card {
+        title: "Ordnerstruktur erstellen";
+        VerticalLayout {
+            spacing: 15px;
+
+            // Projektname
+            VerticalLayout {
+                spacing: 4px;
+                Text {
+                    text: "Projektbezeichnung";
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: Palette.foreground;
+                    opacity: 0.8;
+                }
+                LineEdit {
+                    text <=> FolderState.project-name;
+                    placeholder-text: "z.B. P123_Musterprojekt";
+                }
+            }
+
+            // Zielordner
+            VerticalLayout {
+                spacing: 4px;
+                Text {
+                    text: "Zielverzeichnis";
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: Palette.foreground;
+                    opacity: 0.8;
+                }
+                HorizontalLayout {
+                    spacing: 8px;
+                    LineEdit {
+                        text <=> FolderState.target-folder;
+                        read-only: true;
+                        placeholder-text: "Bitte wählen...";
+                        horizontal-stretch: 1;
+                    }
+                    Button {
+                        text: "Durchsuchen...";
+                        clicked => { FolderState.select-folder(); }
+                    }
+                }
+            }
+
+            Rectangle { height: 10px; }
+
+            Text {
+                text: "Hinweis: Es wird eine standardisierte Ordnerstruktur inklusive der notwendigen Prüfvorlagen im gewählten Verzeichnis erstellt.";
+                font-size: 12px;
+                color: Palette.foreground;
+                opacity: 0.5;
+                wrap: word-wrap;
+            }
+        }
+    }
+
+    // Spacer um Buttons nach unten zu schieben
+    Rectangle { vertical-stretch: 1; }
+
+    // Aktionsleiste
+    HorizontalLayout {
+        spacing: 12px;
+        alignment: end;
+
+        Button {
+            text: "Zurücksetzen";
+            enabled: FolderState.status-type != "pending";
+            clicked => { FolderState.reset(); }
+        }
+
+        Button {
+            text: FolderState.status-type == "pending" ? "Wird erstellt..." : "Ordner erstellen";
+            primary: true;
+            enabled: FolderState.target-folder != "" && FolderState.project-name != "" && FolderState.status-type != "pending";
+            clicked => { FolderState.create-folders(); }
+            width: 200px;
+        }
+    }
+}

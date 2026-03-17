@@ -1,0 +1,111 @@
+import { StandardTableView } from "std-widgets.slint";
+
+// ========================================
+// Structs
+// ========================================
+
+export struct Languages {
+    de: bool,
+    en: bool,
+    fr: bool,
+    es: bool,
+    pt: bool,
+}
+
+export struct Categories {
+    cat1: int,
+    cat2: int,
+    cat3: int,
+    cat4: int,
+    cat5: int,
+    cat6: int,
+    cat7: int,
+    cat8: int,
+}
+
+export struct SheetPermissions {
+    select-locked: bool,
+    select-unlocked: bool,
+    format-cells: bool,
+    format-columns: bool,
+    format-rows: bool,
+    insert-columns: bool,
+    insert-rows: bool,
+    insert-hyperlinks: bool,
+    delete-columns: bool,
+    delete-rows: bool,
+    sort: bool,
+    autofilter: bool,
+    pivot-tables: bool,
+    edit-objects: bool,
+    edit-scenarios: bool,
+    contents: bool,
+}
+
+// ========================================
+// FB-Generator State
+// ========================================
+export global FBState {
+    in-out property <Languages> langs;
+    in-out property <Categories> categories;
+    in-out property <SheetPermissions> sheet-permissions;
+
+    in-out property <string> version;
+    in-out property <string> folder;
+
+    in-out property <bool> protect-sheet;
+    in-out property <bool> protect-workbook;
+    in-out property <string> sheet-password;
+    in-out property <string> workbook-password;
+    in-out property <bool> hide-columns;
+    in-out property <bool> hide-lang-sheet;
+
+    in-out property <string> status-type: "idle";
+    in-out property <string> status-message: "";
+
+    callback generate-report();
+    callback select-folder();
+    callback reset();
+    callback dismiss-status();
+}
+
+// ========================================
+// Budget-to-FB State
+// ========================================
+export global BudgetState {
+    in-out property <string> src-folder;
+    in-out property <string> out-folder;
+    in-out property <string> filename;
+    in-out property <bool> include-xlsm;
+    in-out property <bool> export-txt;
+    in-out property <bool> export-csv;
+
+    in-out property <string> status-type: "idle";
+    in-out property <string> status-message: "";
+    in-out property <[[StandardListViewItem]]> table-data: [];
+    in-out property <[TableColumn]> table-columns: [];
+
+    callback select-src();
+    callback select-out();
+    callback scan();
+    callback do-export-txt();
+    callback do-export-excel();
+    callback do-reset();
+    callback dismiss-status();
+}
+
+// ========================================
+// Folder-Creation State
+// ========================================
+export global FolderState {
+    in-out property <string> target-folder;
+    in-out property <string> project-name;
+
+    in-out property <string> status-type: "idle";
+    in-out property <string> status-message: "";
+
+    callback select-folder();
+    callback create-folders();
+    callback reset();
+    callback dismiss-status();
+}

@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = [
+    "budget_scanner",
+    "fb_generator",
+    "gui"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.87"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+# Deine internen Crates
+fb_generator = { path = "fb_generator" }
+budget_scanner = { path = "budget_scanner" }
+
+# Geteilte externe Abhängigkeiten
+serde = { version = "1", features = ["derive"] }
+slint = { version = "1.15.1", default-features = false }
+slint-build = "1.15.1"

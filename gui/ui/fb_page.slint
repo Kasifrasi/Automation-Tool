@@ -1,0 +1,181 @@
+import { Button, CheckBox, LineEdit, GridBox, Palette } from "std-widgets.slint";
+import { Card, StatusBanner, CategorySpinBox } from "components.slint";
+import { FBState } from "state.slint";
+
+export component FBPage inherits VerticalLayout {
+    spacing: 10px;
+    vertical-stretch: 1;
+
+    property <int> total-positions: FBState.categories.cat1 + FBState.categories.cat2
+        + FBState.categories.cat3 + FBState.categories.cat4 + FBState.categories.cat5
+        + FBState.categories.cat6 + FBState.categories.cat7 + FBState.categories.cat8;
+
+    // --- Layout ---
+
+    // Status
+    if FBState.status-type != "idle" : StatusBanner {
+        status-type: FBState.status-type;
+        status-message: FBState.status-message;
+        dismiss => { FBState.dismiss-status(); }
+    }
+
+    // Zielsprachen
+    Card {
+        title: "Zielsprachen";
+        VerticalLayout {
+            spacing: 6px;
+            property <bool> all-checked: FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
+            CheckBox {
+                text: "Alle auswählen";
+                checked: all-checked;
+                toggled => {
+                    if self.checked {
+                        FBState.langs.de = true;
+                        FBState.langs.en = true;
+                        FBState.langs.fr = true;
+                        FBState.langs.es = true;
+                        FBState.langs.pt = true;
+                    } else {
+                        FBState.langs.de = false;
+                        FBState.langs.en = false;
+                        FBState.langs.fr = false;
+                        FBState.langs.es = false;
+                        FBState.langs.pt = false;
+                    }
+                }
+            }
+            HorizontalLayout {
+                spacing: 16px;
+                CheckBox { text: "Deutsch"; checked <=> FBState.langs.de; }
+                CheckBox { text: "English"; checked <=> FBState.langs.en; }
+                CheckBox { text: "Français"; checked <=> FBState.langs.fr; }
+                CheckBox { text: "Español"; checked <=> FBState.langs.es; }
+                CheckBox { text: "Português"; checked <=> FBState.langs.pt; }
+            }
+        }
+    }
+
+    // Kategorien | Sicherheit
+    HorizontalLayout {
+        spacing: 10px;
+
+        Card {
+            title: "Kategorien & Positionen";
+            subtitle: "Gesamt: " + root.total-positions;
+            horizontal-stretch: 4;
+            clip: true;
+            GridBox {
+                spacing: 6px;
+                Row { Text { text: "1. Bauausgaben"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat1; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "2. Investitionen"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat2; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "3. Personalkosten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat3; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "4. Projektaktivitäten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat4; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "5. Projektverwaltung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat5; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "6. Evaluierung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat6; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "7. Audit"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat7; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "8. Reserve"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat8; minimum: 0; col: 1; max-width: 120px; } }
+            }
+        }
+
+        Card {
+            title: "Excel-Sicherheit";
+            horizontal-stretch: 6;
+            VerticalLayout {
+                spacing: 8px;
+                HorizontalLayout {
+                    spacing: 16px;
+                    CheckBox { text: "Blattschutz"; checked <=> FBState.protect-sheet; }
+                    CheckBox { text: "Mappenschutz"; checked <=> FBState.protect-workbook; }
+                }
+                HorizontalLayout {
+                    spacing: 8px;
+                    Rectangle {
+                        background: Palette.background; border-radius: 6px; border-width: 1px; border-color: Palette.border; horizontal-stretch: 1;
+                        opacity: FBState.protect-sheet ? 1.0 : 0.5;
+                        VerticalLayout {
+                            padding: 10px; spacing: 3px;
+                            Text { text: "Blatt-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
+                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.sheet-password; enabled: FBState.protect-sheet; }
+                        }
+                    }
+                    Rectangle {
+                        background: Palette.background; border-radius: 6px; border-width: 1px; border-color: Palette.border; horizontal-stretch: 1;
+                        opacity: FBState.protect-workbook ? 1.0 : 0.5;
+                        VerticalLayout {
+                            padding: 10px; spacing: 3px;
+                            Text { text: "Mappen-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
+                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.workbook-password; enabled: FBState.protect-workbook; }
+                        }
+                    }
+                }
+                Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+                Text {
+                    text: "Erlaubte Aktionen bei Blattschutz";
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: Palette.foreground;
+                    opacity: FBState.protect-sheet ? 0.6 : 0.3;
+                }
+                GridBox {
+                    spacing: 2px;
+                    Row { CheckBox { text: "Gesperrte Zellen wählen"; checked <=> FBState.sheet-permissions.select-locked; enabled: FBState.protect-sheet; } CheckBox { text: "Spalten löschen"; checked <=> FBState.sheet-permissions.delete-columns; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Freie Zellen wählen"; checked <=> FBState.sheet-permissions.select-unlocked; enabled: FBState.protect-sheet; } CheckBox { text: "Zeilen löschen"; checked <=> FBState.sheet-permissions.delete-rows; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Zellen formatieren"; checked <=> FBState.sheet-permissions.format-cells; enabled: FBState.protect-sheet; } CheckBox { text: "Sortieren"; checked <=> FBState.sheet-permissions.sort; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Spalten formatieren"; checked <=> FBState.sheet-permissions.format-columns; enabled: FBState.protect-sheet; } CheckBox { text: "Autofilter"; checked <=> FBState.sheet-permissions.autofilter; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Zeilen formatieren"; checked <=> FBState.sheet-permissions.format-rows; enabled: FBState.protect-sheet; } CheckBox { text: "Pivot-Tabellen"; checked <=> FBState.sheet-permissions.pivot-tables; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Spalten einfügen"; checked <=> FBState.sheet-permissions.insert-columns; enabled: FBState.protect-sheet; } CheckBox { text: "Objekte bearbeiten"; checked <=> FBState.sheet-permissions.edit-objects; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Zeilen einfügen"; checked <=> FBState.sheet-permissions.insert-rows; enabled: FBState.protect-sheet; } CheckBox { text: "Szenarien"; checked <=> FBState.sheet-permissions.edit-scenarios; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Links einfügen"; checked <=> FBState.sheet-permissions.insert-hyperlinks; enabled: FBState.protect-sheet; } CheckBox { text: "Inhalte schützen"; checked <=> FBState.sheet-permissions.contents; enabled: FBState.protect-sheet; } }
+                }
+            }
+        }
+    }
+
+    // Sonstige Einstellungen & Ausgabe
+    Card {
+        title: "Sonstige Einstellungen & Ausgabe";
+        VerticalLayout {
+            spacing: 10px;
+            VerticalLayout {
+                spacing: 4px;
+                Text { text: "Version"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                LineEdit { text <=> FBState.version; placeholder-text: "z.B. v2025-1"; width: 160px; }
+            }
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+            HorizontalLayout {
+                spacing: 16px;
+                CheckBox { text: "Spalten Q:V ausblenden"; checked <=> FBState.hide-columns; }
+                CheckBox { text: "Sprachblatt ausblenden"; checked <=> FBState.hide-lang-sheet; }
+            }
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+            VerticalLayout {
+                spacing: 4px;
+                Text { text: "Zielordner"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
+                HorizontalLayout {
+                    spacing: 8px;
+                    LineEdit { text <=> FBState.folder; read-only: true; placeholder-text: "Bitte wählen..."; horizontal-stretch: 1; }
+                    Button { text: "Durchsuchen..."; clicked => { FBState.select-folder(); } }
+                }
+            }
+        }
+    }
+
+    // Aktionsleiste
+    HorizontalLayout {
+        spacing: 12px;
+        Text {
+            text: FBState.version != "" ? "→ " + FBState.version + "_de.xlsx, " + FBState.version + "_en.xlsx, ..." : "";
+            font-size: 13px; color: Palette.foreground; opacity: 0.4; vertical-alignment: center;
+        }
+        Rectangle { horizontal-stretch: 1; }
+        Button { text: "Zurücksetzen"; enabled: FBState.status-type != "pending"; clicked => { FBState.reset(); } }
+        Button {
+            text: FBState.status-type == "pending" ? "Wird erstellt..." : "Berichte generieren";
+            primary: true;
+            enabled: FBState.folder != "" && FBState.version != "" && FBState.status-type != "pending"
+                && (FBState.langs.de || FBState.langs.en || FBState.langs.fr || FBState.langs.es || FBState.langs.pt);
+            clicked => { FBState.generate-report(); }
+            width: 200px;
+        }
+    }
+}

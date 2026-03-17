@@ -1,0 +1,27 @@
+[package]
+name = "gui"
+
+# Geerbt vom Workspace
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+rfd = "0.14"
+dark-light = "2.0.0"
+
+# Import deiner eigenen Logik über den Workspace
+fb_generator = { workspace = true }
+budget_scanner = { workspace = true }
+
+# Für Windows
+[target.'cfg(windows)'.dependencies]
+slint = { workspace = true, features = ["backend-winit", "renderer-winit-skia", "live-preview", "compat-1-2", "std"] }
+
+# Für Linux/Unix
+[target.'cfg(unix)'.dependencies]
+slint = { workspace = true, features = ["backend-winit", "renderer-winit-skia", "live-preview", "compat-1-2", "std"] }
+
+[build-dependencies]
+slint-build = { workspace = true }
