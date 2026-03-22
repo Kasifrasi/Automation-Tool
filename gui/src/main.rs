@@ -308,13 +308,138 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 let b2f = ui.global::<BudgetState>();
-                if b2f.get_src_folder().is_empty() {
+
+                let src = b2f.get_src_folder().to_string();
+                let out_base = b2f.get_out_folder().to_string();
+
+                if src.is_empty() {
                     b2f.set_status_type("error".into());
                     b2f.set_status_message("Bitte Quellordner wählen.".into());
                     return;
                 }
-                b2f.set_status_type("success".into());
-                b2f.set_status_message("Scan-Funktion noch nicht implementiert.".into());
+                if out_base.is_empty() {
+                    b2f.set_status_type("error".into());
+                    b2f.set_status_message("Bitte Ausgabeordner wählen.".into());
+                    return;
+                }
+
+                b2f.set_status_type("pending".into());
+                b2f.set_status_message("Scannt...".into());
+
+                let src_path = std::path::Path::new(&src);
+                let out_base_path = std::path::Path::new(&out_base);
+
+                // 1. Budget-Dateien scannen
+                let result = budget_scanner::scan_directory(src_path);
+
+                // 2. Output-Ordner bestimmen
+                let output_dir = budget_scanner::resolve_output_dir(out_base_path);
+
+                // 3. Finanzberichte generieren
+                let mut generated = 0u32;
+                let mut gen_errors: Vec<(String, String)> = Vec::new();
+
+                for data in &result.successes {
+                    let relative = data
+                        .file_path
+                        .strip_prefix(src_path)
+                        .unwrap_or(&data.file_path);
+                    let out_path = output_dir.join(relative);
+
+                    // Verzeichnisse erstellen
+                    if let Some(parent) = out_path.parent() {
+                        if let Err(e) = std::fs::create_dir_all(parent) {
+                            gen_errors.push((
+                                data.file_path.display().to_string(),
+                                format!("Ordner erstellen fehlgeschlagen: {e}"),
+                            ));
+                            continue;
+                        }
+                    }
+
+                    let config = budget_scanner::budget_to_report_config(data);
+                    match config.write_to(&out_path) {
+                        Ok(()) => generated += 1,
+                        Err(e) => gen_errors.push((
+                            data.file_path.display().to_string(),
+                            format!("FB-Generierung fehlgeschlagen: {e}"),
+                        )),
+                    }
+                }
+
+                // 4. Fehler-CSV schreiben
+                if !result.failures.is_empty() {
+                    let csv_path = output_dir.join("scan_fehler.csv");
+                    let _ = std::fs::create_dir_all(&output_dir);
+                    let _ = budget_scanner::write_failure_report(&result.failures, &csv_path);
+                }
+
+                // 5. Tabelle aktualisieren
+                let mk_col = |t: &str| {
+                    let mut c = slint::TableColumn::default();
+                    c.title = t.into();
+                    c
+                };
+                let columns = slint::ModelRc::new(slint::VecModel::from(vec![
+                    mk_col("Dateiname"),
+                    mk_col("Status"),
+                    mk_col("Details"),
+                ]));
+                b2f.set_table_columns(columns);
+
+                let mut rows: Vec<slint::ModelRc<slint::StandardListViewItem>> = Vec::new();
+
+                for data in &result.successes {
+                    let fname = data.file_path.file_name()
+                        .map(|n| n.to_string_lossy().to_string())
+                        .unwrap_or_default();
+                    let status = if gen_errors.iter().any(|(p, _)| *p == data.file_path.display().to_string()) {
+                        "Fehler"
+                    } else {
+                        "OK"
+                    };
+                    let detail = gen_errors.iter()
+                        .find(|(p, _)| *p == data.file_path.display().to_string())
+                        .map(|(_, e)| e.as_str())
+                        .unwrap_or("FB erstellt");
+
+                    rows.push(slint::ModelRc::new(slint::VecModel::from(vec![
+                        slint::StandardListViewItem::from(slint::SharedString::from(&fname)),
+                        slint::StandardListViewItem::from(slint::SharedString::from(status)),
+                        slint::StandardListViewItem::from(slint::SharedString::from(detail)),
+                    ])));
+                }
+
+                for f in &result.failures {
+                    rows.push(slint::ModelRc::new(slint::VecModel::from(vec![
+                        slint::StandardListViewItem::from(slint::SharedString::from(&f.file_name)),
+                        slint::StandardListViewItem::from(slint::SharedString::from("Fehler")),
+                        slint::StandardListViewItem::from(slint::SharedString::from(f.reason.to_string())),
+                    ])));
+                }
+
+                let table_data = slint::ModelRc::new(slint::VecModel::from(rows));
+                b2f.set_table_data(table_data);
+
+                // 6. Status
+                let scan_fail = result.failures.len();
+                let gen_fail = gen_errors.len();
+                let total = result.successes.len() + scan_fail;
+
+                if scan_fail == 0 && gen_fail == 0 {
+                    b2f.set_status_type("success".into());
+                    b2f.set_status_message(
+                        format!("{generated}/{total} Finanzberichte erstellt → {}", output_dir.display()).into(),
+                    );
+                } else {
+                    b2f.set_status_type("error".into());
+                    b2f.set_status_message(
+                        format!(
+                            "{generated} FB erstellt, {scan_fail} Scan-Fehler, {gen_fail} Generierungs-Fehler → {}",
+                            output_dir.display()
+                        ).into(),
+                    );
+                }
             }
         }
     });

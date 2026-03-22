@@ -676,7 +676,10 @@ version = "0.1.0"
 dependencies = [
  "calamine",
  "comfy-table",
+ "fb_generator",
+ "rayon",
  "regex",
+ "thiserror 2.0.18",
  "walkdir",
 ]
 
