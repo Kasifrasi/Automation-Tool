@@ -675,6 +675,8 @@ name = "budget_scanner"
 version = "0.1.0"
 dependencies = [
  "calamine",
+ "regex",
+ "walkdir",
 ]
 
 [[package]]

@@ -9,3 +9,5 @@ license.workspace = true
 
 [dependencies]
 calamine = "0.34.0"
+regex = "1"
+walkdir = "2"
