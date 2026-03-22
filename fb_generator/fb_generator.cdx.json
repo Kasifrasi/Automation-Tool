@@ -2,9 +2,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.3",
   "version": 1,
-  "serialNumber": "urn:uuid:773a8d50-eeaa-4a84-a1e8-b2f2cdbf0a45",
+  "serialNumber": "urn:uuid:8d5d7aee-43e2-47a1-ad24-38aa8582d693",
   "metadata": {
-    "timestamp": "2026-03-17T05:48:08.078902663Z",
+    "timestamp": "2026-03-22T14:43:35.455874047Z",
     "tools": [
       {
         "vendor": "CycloneDX",
@@ -1008,6 +1008,35 @@
         {
           "type": "vcs",
           "url": "https://github.com/RustCrypto/traits"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "registry+https://github.com/rust-lang/crates.io-index#encoding_rs@0.8.35",
+      "author": "Henri Sivonen <hsivonen@hsivonen.fi>",
+      "name": "encoding_rs",
+      "version": "0.8.35",
+      "description": "A Gecko-oriented implementation of the Encoding Standard",
+      "scope": "required",
+      "licenses": [
+        {
+          "expression": "(Apache-2.0 OR MIT) AND BSD-3-Clause"
+        }
+      ],
+      "purl": "pkg:cargo/encoding_rs@0.8.35",
+      "externalReferences": [
+        {
+          "type": "documentation",
+          "url": "https://docs.rs/encoding_rs/"
+        },
+        {
+          "type": "website",
+          "url": "https://docs.rs/encoding_rs/"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/hsivonen/encoding_rs"
         }
       ]
     },
@@ -3549,6 +3578,12 @@
       ]
     },
     {
+      "ref": "registry+https://github.com/rust-lang/crates.io-index#encoding_rs@0.8.35",
+      "dependsOn": [
+        "registry+https://github.com/rust-lang/crates.io-index#cfg-if@1.0.4"
+      ]
+    },
+    {
       "ref": "registry+https://github.com/rust-lang/crates.io-index#equivalent@1.0.2",
       "dependsOn": []
     },
@@ -3768,6 +3803,7 @@
     {
       "ref": "registry+https://github.com/rust-lang/crates.io-index#quick-xml@0.39.2",
       "dependsOn": [
+        "registry+https://github.com/rust-lang/crates.io-index#encoding_rs@0.8.35",
         "registry+https://github.com/rust-lang/crates.io-index#memchr@2.8.0"
       ]
     },
