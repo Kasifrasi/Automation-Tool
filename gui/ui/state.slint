@@ -67,6 +67,7 @@ export global FBState {
     callback select-folder();
     callback reset();
     callback dismiss-status();
+    callback save-settings();
 }
 
 // ========================================
@@ -75,6 +76,17 @@ export global FBState {
 export global BudgetState {
     in-out property <string> src-folder;
     in-out property <string> out-folder;
+
+    // Settings (persistent via confy)
+    in-out property <bool> show-settings: false;
+    in-out property <string> version;
+    in-out property <bool> protect-sheet;
+    in-out property <bool> protect-workbook;
+    in-out property <string> sheet-password;
+    in-out property <string> workbook-password;
+    in-out property <bool> hide-columns;
+    in-out property <bool> hide-lang-sheet;
+    in-out property <SheetPermissions> sheet-permissions;
 
     in-out property <string> status-type: "idle";
     in-out property <string> status-message: "";
@@ -88,6 +100,8 @@ export global BudgetState {
     callback do-export-excel();
     callback do-reset();
     callback dismiss-status();
+    callback toggle-settings();
+    callback save-settings();
 }
 
 // ========================================

@@ -8,6 +8,317 @@ use fb_generator::{
 use slint::Model;
 use std::path::PathBuf;
 
+const APP_NAME: &str = "automation-tool";
+
+// ==========================================
+// confy Settings Structs
+// ==========================================
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct B2fSettings {
+    protect_sheet: bool,
+    protect_workbook: bool,
+    sheet_password: String,
+    workbook_password: String,
+    hide_columns: bool,
+    hide_lang_sheet: bool,
+    version: String,
+    select_locked: bool,
+    select_unlocked: bool,
+    format_cells: bool,
+    format_columns: bool,
+    format_rows: bool,
+    insert_columns: bool,
+    insert_rows: bool,
+    insert_hyperlinks: bool,
+    delete_columns: bool,
+    delete_rows: bool,
+    sort: bool,
+    autofilter: bool,
+    pivot_tables: bool,
+    edit_objects: bool,
+    edit_scenarios: bool,
+    contents: bool,
+}
+
+impl Default for B2fSettings {
+    fn default() -> Self {
+        Self {
+            protect_sheet: true,
+            protect_workbook: true,
+            sheet_password: String::new(),
+            workbook_password: String::new(),
+            hide_columns: true,
+            hide_lang_sheet: true,
+            version: String::new(),
+            select_locked: true,
+            select_unlocked: true,
+            format_cells: true,
+            format_columns: true,
+            format_rows: true,
+            insert_columns: false,
+            insert_rows: false,
+            insert_hyperlinks: true,
+            delete_columns: true,
+            delete_rows: true,
+            sort: true,
+            autofilter: true,
+            pivot_tables: true,
+            edit_objects: false,
+            edit_scenarios: true,
+            contents: false,
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct FbSettings {
+    langs: [bool; 5], // de, en, fr, es, pt
+    categories: [i32; 8],
+    protect_sheet: bool,
+    protect_workbook: bool,
+    sheet_password: String,
+    workbook_password: String,
+    hide_columns: bool,
+    hide_lang_sheet: bool,
+    version: String,
+    select_locked: bool,
+    select_unlocked: bool,
+    format_cells: bool,
+    format_columns: bool,
+    format_rows: bool,
+    insert_columns: bool,
+    insert_rows: bool,
+    insert_hyperlinks: bool,
+    delete_columns: bool,
+    delete_rows: bool,
+    sort: bool,
+    autofilter: bool,
+    pivot_tables: bool,
+    edit_objects: bool,
+    edit_scenarios: bool,
+    contents: bool,
+}
+
+impl Default for FbSettings {
+    fn default() -> Self {
+        Self {
+            langs: [true, false, false, false, false],
+            categories: [20, 20, 30, 30, 20, 0, 0, 0],
+            protect_sheet: true,
+            protect_workbook: true,
+            sheet_password: String::new(),
+            workbook_password: String::new(),
+            hide_columns: true,
+            hide_lang_sheet: true,
+            version: String::new(),
+            select_locked: true,
+            select_unlocked: true,
+            format_cells: true,
+            format_columns: true,
+            format_rows: true,
+            insert_columns: false,
+            insert_rows: false,
+            insert_hyperlinks: true,
+            delete_columns: true,
+            delete_rows: true,
+            sort: true,
+            autofilter: true,
+            pivot_tables: true,
+            edit_objects: false,
+            edit_scenarios: true,
+            contents: false,
+        }
+    }
+}
+
+// ==========================================
+// confy Load / Save Helpers
+// ==========================================
+
+fn permissions_from_settings(
+    select_locked: bool,
+    select_unlocked: bool,
+    format_cells: bool,
+    format_columns: bool,
+    format_rows: bool,
+    insert_columns: bool,
+    insert_rows: bool,
+    insert_hyperlinks: bool,
+    delete_columns: bool,
+    delete_rows: bool,
+    sort: bool,
+    autofilter: bool,
+    pivot_tables: bool,
+    edit_objects: bool,
+    edit_scenarios: bool,
+    contents: bool,
+) -> SheetPermissions {
+    SheetPermissions {
+        select_locked,
+        select_unlocked,
+        format_cells,
+        format_columns,
+        format_rows,
+        insert_columns,
+        insert_rows,
+        insert_hyperlinks,
+        delete_columns,
+        delete_rows,
+        sort,
+        autofilter,
+        pivot_tables,
+        edit_objects,
+        edit_scenarios,
+        contents,
+    }
+}
+
+fn load_b2f_settings(ui: &MainWindow) {
+    let s: B2fSettings = confy::load(APP_NAME, "b2f").unwrap_or_default();
+    let b2f = ui.global::<BudgetState>();
+    b2f.set_version(s.version.into());
+    b2f.set_protect_sheet(s.protect_sheet);
+    b2f.set_protect_workbook(s.protect_workbook);
+    b2f.set_sheet_password(s.sheet_password.into());
+    b2f.set_workbook_password(s.workbook_password.into());
+    b2f.set_hide_columns(s.hide_columns);
+    b2f.set_hide_lang_sheet(s.hide_lang_sheet);
+    b2f.set_sheet_permissions(permissions_from_settings(
+        s.select_locked,
+        s.select_unlocked,
+        s.format_cells,
+        s.format_columns,
+        s.format_rows,
+        s.insert_columns,
+        s.insert_rows,
+        s.insert_hyperlinks,
+        s.delete_columns,
+        s.delete_rows,
+        s.sort,
+        s.autofilter,
+        s.pivot_tables,
+        s.edit_objects,
+        s.edit_scenarios,
+        s.contents,
+    ));
+}
+
+fn save_b2f_settings(ui: &MainWindow) {
+    let b2f = ui.global::<BudgetState>();
+    let sp = b2f.get_sheet_permissions();
+    let s = B2fSettings {
+        version: b2f.get_version().to_string(),
+        protect_sheet: b2f.get_protect_sheet(),
+        protect_workbook: b2f.get_protect_workbook(),
+        sheet_password: b2f.get_sheet_password().to_string(),
+        workbook_password: b2f.get_workbook_password().to_string(),
+        hide_columns: b2f.get_hide_columns(),
+        hide_lang_sheet: b2f.get_hide_lang_sheet(),
+        select_locked: sp.select_locked,
+        select_unlocked: sp.select_unlocked,
+        format_cells: sp.format_cells,
+        format_columns: sp.format_columns,
+        format_rows: sp.format_rows,
+        insert_columns: sp.insert_columns,
+        insert_rows: sp.insert_rows,
+        insert_hyperlinks: sp.insert_hyperlinks,
+        delete_columns: sp.delete_columns,
+        delete_rows: sp.delete_rows,
+        sort: sp.sort,
+        autofilter: sp.autofilter,
+        pivot_tables: sp.pivot_tables,
+        edit_objects: sp.edit_objects,
+        edit_scenarios: sp.edit_scenarios,
+        contents: sp.contents,
+    };
+    let _ = confy::store(APP_NAME, "b2f", &s);
+}
+
+fn load_fb_settings(ui: &MainWindow) {
+    let s: FbSettings = confy::load(APP_NAME, "fb").unwrap_or_default();
+    let fb = ui.global::<FBState>();
+    fb.set_langs(Languages {
+        de: s.langs[0],
+        en: s.langs[1],
+        fr: s.langs[2],
+        es: s.langs[3],
+        pt: s.langs[4],
+    });
+    fb.set_categories(Categories {
+        cat1: s.categories[0],
+        cat2: s.categories[1],
+        cat3: s.categories[2],
+        cat4: s.categories[3],
+        cat5: s.categories[4],
+        cat6: s.categories[5],
+        cat7: s.categories[6],
+        cat8: s.categories[7],
+    });
+    fb.set_version(s.version.into());
+    fb.set_protect_sheet(s.protect_sheet);
+    fb.set_protect_workbook(s.protect_workbook);
+    fb.set_sheet_password(s.sheet_password.into());
+    fb.set_workbook_password(s.workbook_password.into());
+    fb.set_hide_columns(s.hide_columns);
+    fb.set_hide_lang_sheet(s.hide_lang_sheet);
+    fb.set_sheet_permissions(permissions_from_settings(
+        s.select_locked,
+        s.select_unlocked,
+        s.format_cells,
+        s.format_columns,
+        s.format_rows,
+        s.insert_columns,
+        s.insert_rows,
+        s.insert_hyperlinks,
+        s.delete_columns,
+        s.delete_rows,
+        s.sort,
+        s.autofilter,
+        s.pivot_tables,
+        s.edit_objects,
+        s.edit_scenarios,
+        s.contents,
+    ));
+}
+
+fn save_fb_settings(ui: &MainWindow) {
+    let fb = ui.global::<FBState>();
+    let sp = fb.get_sheet_permissions();
+    let langs = fb.get_langs();
+    let cats = fb.get_categories();
+    let s = FbSettings {
+        langs: [langs.de, langs.en, langs.fr, langs.es, langs.pt],
+        categories: [
+            cats.cat1, cats.cat2, cats.cat3, cats.cat4, cats.cat5, cats.cat6, cats.cat7, cats.cat8,
+        ],
+        version: fb.get_version().to_string(),
+        protect_sheet: fb.get_protect_sheet(),
+        protect_workbook: fb.get_protect_workbook(),
+        sheet_password: fb.get_sheet_password().to_string(),
+        workbook_password: fb.get_workbook_password().to_string(),
+        hide_columns: fb.get_hide_columns(),
+        hide_lang_sheet: fb.get_hide_lang_sheet(),
+        select_locked: sp.select_locked,
+        select_unlocked: sp.select_unlocked,
+        format_cells: sp.format_cells,
+        format_columns: sp.format_columns,
+        format_rows: sp.format_rows,
+        insert_columns: sp.insert_columns,
+        insert_rows: sp.insert_rows,
+        insert_hyperlinks: sp.insert_hyperlinks,
+        delete_columns: sp.delete_columns,
+        delete_rows: sp.delete_rows,
+        sort: sp.sort,
+        autofilter: sp.autofilter,
+        pivot_tables: sp.pivot_tables,
+        edit_objects: sp.edit_objects,
+        edit_scenarios: sp.edit_scenarios,
+        contents: sp.contents,
+    };
+    let _ = confy::store(APP_NAME, "fb", &s);
+}
+
 // ==========================================
 // Defaults (Single Source of Truth)
 // ==========================================
@@ -73,6 +384,34 @@ fn apply_b2f_defaults(ui: &MainWindow) {
     b2f.set_out_folder("".into());
     b2f.set_status_type("idle".into());
     b2f.set_status_message("".into());
+
+    b2f.set_version("".into());
+    b2f.set_protect_sheet(true);
+    b2f.set_protect_workbook(true);
+    b2f.set_sheet_password("".into());
+    b2f.set_workbook_password("".into());
+    b2f.set_hide_columns(true);
+    b2f.set_hide_lang_sheet(true);
+    b2f.set_show_settings(false);
+
+    b2f.set_sheet_permissions(SheetPermissions {
+        select_locked: true,
+        select_unlocked: true,
+        format_cells: true,
+        format_columns: true,
+        format_rows: true,
+        insert_columns: false,
+        insert_rows: false,
+        insert_hyperlinks: true,
+        delete_columns: true,
+        delete_rows: true,
+        sort: true,
+        autofilter: true,
+        pivot_tables: true,
+        edit_objects: false,
+        edit_scenarios: true,
+        contents: false,
+    });
 }
 
 fn apply_folder_defaults(ui: &MainWindow) {
@@ -90,9 +429,11 @@ fn apply_folder_defaults(ui: &MainWindow) {
 fn main() -> Result<(), slint::PlatformError> {
     let ui = MainWindow::new()?;
 
-    // Defaults setzen
+    // Defaults setzen, dann gespeicherte Settings laden
     apply_fb_defaults(&ui);
+    load_fb_settings(&ui);
     apply_b2f_defaults(&ui);
+    load_b2f_settings(&ui);
     apply_folder_defaults(&ui);
 
     // Dark Mode: System-Einstellung erkennen
@@ -152,6 +493,15 @@ fn main() -> Result<(), slint::PlatformError> {
                 let fb = ui.global::<FBState>();
                 fb.set_status_type("idle".into());
                 fb.set_status_message("".into());
+            }
+        }
+    });
+
+    ui.global::<FBState>().on_save_settings({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                save_fb_settings(&ui);
             }
         }
     });
@@ -332,7 +682,49 @@ fn main() -> Result<(), slint::PlatformError> {
                 // 2. Output-Ordner bestimmen
                 let output_dir = budget_scanner::resolve_output_dir(out_base_path);
 
-                // 3. Finanzberichte generieren
+                // 3. ReportOptions aus Settings bauen
+                let sheet_prot = if b2f.get_protect_sheet() {
+                    let sp = b2f.get_sheet_permissions();
+                    Some(
+                        SheetProtection::new()
+                            .with_password(b2f.get_sheet_password().to_string())
+                            .allow_select_locked_cells(sp.select_locked)
+                            .allow_select_unlocked_cells(sp.select_unlocked)
+                            .allow_format_cells(sp.format_cells)
+                            .allow_format_columns(sp.format_columns)
+                            .allow_format_rows(sp.format_rows)
+                            .allow_insert_columns(sp.insert_columns)
+                            .allow_insert_rows(sp.insert_rows)
+                            .allow_insert_hyperlinks(sp.insert_hyperlinks)
+                            .allow_delete_columns(sp.delete_columns)
+                            .allow_delete_rows(sp.delete_rows)
+                            .allow_sort(sp.sort)
+                            .allow_autofilter(sp.autofilter)
+                            .allow_pivot_tables(sp.pivot_tables)
+                            .allow_edit_objects(sp.edit_objects)
+                            .allow_edit_scenarios(sp.edit_scenarios)
+                            .allow_contents(sp.contents),
+                    )
+                } else {
+                    None
+                };
+
+                let mut options_builder = ReportOptions::builder();
+                if let Some(prot) = sheet_prot {
+                    options_builder = options_builder.sheet_protection(prot);
+                }
+                if b2f.get_protect_workbook() {
+                    let pw = b2f.get_workbook_password().to_string();
+                    if !pw.is_empty() {
+                        options_builder = options_builder.workbook_password(pw);
+                    }
+                }
+                options_builder = options_builder
+                    .hide_columns_qv(b2f.get_hide_columns())
+                    .hide_language_sheet(b2f.get_hide_lang_sheet());
+                let report_options = options_builder.build();
+
+                // 4. Finanzberichte generieren
                 let mut generated = 0u32;
                 let mut gen_errors: Vec<(String, String)> = Vec::new();
 
@@ -341,7 +733,16 @@ fn main() -> Result<(), slint::PlatformError> {
                         .file_path
                         .strip_prefix(src_path)
                         .unwrap_or(&data.file_path);
-                    let out_path = output_dir.join(relative);
+
+                    // _FB Suffix im Dateinamen
+                    let stem = relative
+                        .file_stem()
+                        .unwrap_or_default()
+                        .to_string_lossy();
+                    let fb_name = format!("{stem}_FB.xlsx");
+                    let out_path = output_dir.join(
+                        relative.with_file_name(&fb_name),
+                    );
 
                     // Verzeichnisse erstellen
                     if let Some(parent) = out_path.parent() {
@@ -354,7 +755,8 @@ fn main() -> Result<(), slint::PlatformError> {
                         }
                     }
 
-                    let config = budget_scanner::budget_to_report_config(data);
+                    let config =
+                        budget_scanner::budget_to_report_config(data, report_options.clone());
                     match config.write_to(&out_path) {
                         Ok(()) => generated += 1,
                         Err(e) => gen_errors.push((
@@ -364,14 +766,14 @@ fn main() -> Result<(), slint::PlatformError> {
                     }
                 }
 
-                // 4. Fehler-CSV schreiben
+                // 5. Fehler-CSV schreiben
                 if !result.failures.is_empty() {
                     let csv_path = output_dir.join("scan_fehler.csv");
                     let _ = std::fs::create_dir_all(&output_dir);
                     let _ = budget_scanner::write_failure_report(&result.failures, &csv_path);
                 }
 
-                // 5. Tabelle aktualisieren
+                // 6. Tabelle aktualisieren
                 let mk_col = |t: &str| {
                     let mut c = slint::TableColumn::default();
                     c.title = t.into();
@@ -418,7 +820,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 let table_data = slint::ModelRc::new(slint::VecModel::from(rows));
                 b2f.set_table_data(table_data);
 
-                // 6. Status
+                // 7. Status
                 let scan_fail = result.failures.len();
                 let gen_fail = gen_errors.len();
                 let total = result.successes.len() + scan_fail;
@@ -549,6 +951,26 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 apply_b2f_defaults(&ui);
+                save_b2f_settings(&ui);
+            }
+        }
+    });
+
+    ui.global::<BudgetState>().on_toggle_settings({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let b2f = ui.global::<BudgetState>();
+                b2f.set_show_settings(!b2f.get_show_settings());
+            }
+        }
+    });
+
+    ui.global::<BudgetState>().on_save_settings({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                save_b2f_settings(&ui);
             }
         }
     });

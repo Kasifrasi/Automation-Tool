@@ -1,4 +1,4 @@
-import { Button, LineEdit, Palette, StandardTableView } from "std-widgets.slint";
+import { Button, CheckBox, LineEdit, GridBox, Palette, StandardTableView } from "std-widgets.slint";
 import { Card, StatusBanner } from "components.slint";
 import { BudgetState } from "state.slint";
 
@@ -22,6 +22,99 @@ export component BudgetPage inherits VerticalLayout {
         Button { text: "Ausgabe..."; clicked => { BudgetState.select-out(); } }
     }
 
+    // Settings Panel (toggle)
+    if BudgetState.show-settings : Card {
+        title: "Einstellungen";
+
+        VerticalLayout {
+            spacing: 10px;
+
+            // Version
+            HorizontalLayout {
+                spacing: 8px;
+                Text { text: "Version"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; }
+                LineEdit {
+                    text <=> BudgetState.version;
+                    placeholder-text: "z.B. v2025-1";
+                    width: 160px;
+                    edited => { BudgetState.save-settings(); }
+                }
+            }
+
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+
+            // Sichtbarkeit
+            HorizontalLayout {
+                spacing: 16px;
+                CheckBox { text: "Spalten Q:V ausblenden"; checked <=> BudgetState.hide-columns; toggled => { BudgetState.save-settings(); } }
+                CheckBox { text: "Sprachblatt ausblenden"; checked <=> BudgetState.hide-lang-sheet; toggled => { BudgetState.save-settings(); } }
+            }
+
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+
+            // Excel-Sicherheit
+            HorizontalLayout {
+                spacing: 16px;
+                CheckBox { text: "Blattschutz"; checked <=> BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } }
+                CheckBox { text: "Mappenschutz"; checked <=> BudgetState.protect-workbook; toggled => { BudgetState.save-settings(); } }
+            }
+
+            HorizontalLayout {
+                spacing: 8px;
+                Rectangle {
+                    background: Palette.background; border-radius: 6px; border-width: 1px; border-color: Palette.border; horizontal-stretch: 1;
+                    opacity: BudgetState.protect-sheet ? 1.0 : 0.5;
+                    VerticalLayout {
+                        padding: 10px; spacing: 3px;
+                        Text { text: "Blatt-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
+                        LineEdit {
+                            input-type: InputType.password;
+                            placeholder-text: "Standard: thetool";
+                            text <=> BudgetState.sheet-password;
+                            enabled: BudgetState.protect-sheet;
+                            edited => { BudgetState.save-settings(); }
+                        }
+                    }
+                }
+                Rectangle {
+                    background: Palette.background; border-radius: 6px; border-width: 1px; border-color: Palette.border; horizontal-stretch: 1;
+                    opacity: BudgetState.protect-workbook ? 1.0 : 0.5;
+                    VerticalLayout {
+                        padding: 10px; spacing: 3px;
+                        Text { text: "Mappen-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
+                        LineEdit {
+                            input-type: InputType.password;
+                            placeholder-text: "Standard: thetool";
+                            text <=> BudgetState.workbook-password;
+                            enabled: BudgetState.protect-workbook;
+                            edited => { BudgetState.save-settings(); }
+                        }
+                    }
+                }
+            }
+
+            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
+
+            // Blattschutz-Berechtigungen
+            Text {
+                text: "Erlaubte Aktionen bei Blattschutz";
+                font-size: 13px; font-weight: 600; color: Palette.foreground;
+                opacity: BudgetState.protect-sheet ? 0.6 : 0.3;
+            }
+            GridBox {
+                spacing: 2px;
+                Row { CheckBox { text: "Gesperrte Zellen wählen"; checked <=> BudgetState.sheet-permissions.select-locked; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Spalten löschen"; checked <=> BudgetState.sheet-permissions.delete-columns; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Freie Zellen wählen"; checked <=> BudgetState.sheet-permissions.select-unlocked; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Zeilen löschen"; checked <=> BudgetState.sheet-permissions.delete-rows; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Zellen formatieren"; checked <=> BudgetState.sheet-permissions.format-cells; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Sortieren"; checked <=> BudgetState.sheet-permissions.sort; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Spalten formatieren"; checked <=> BudgetState.sheet-permissions.format-columns; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Autofilter"; checked <=> BudgetState.sheet-permissions.autofilter; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Zeilen formatieren"; checked <=> BudgetState.sheet-permissions.format-rows; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Pivot-Tabellen"; checked <=> BudgetState.sheet-permissions.pivot-tables; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Spalten einfügen"; checked <=> BudgetState.sheet-permissions.insert-columns; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Objekte bearbeiten"; checked <=> BudgetState.sheet-permissions.edit-objects; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Zeilen einfügen"; checked <=> BudgetState.sheet-permissions.insert-rows; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Szenarien"; checked <=> BudgetState.sheet-permissions.edit-scenarios; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+                Row { CheckBox { text: "Links einfügen"; checked <=> BudgetState.sheet-permissions.insert-hyperlinks; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } CheckBox { text: "Inhalte schützen"; checked <=> BudgetState.sheet-permissions.contents; enabled: BudgetState.protect-sheet; toggled => { BudgetState.save-settings(); } } }
+            }
+        }
+    }
+
     // Ergebnis-Tabelle
     Card {
         title: "Ergebnisse";
@@ -36,6 +129,11 @@ export component BudgetPage inherits VerticalLayout {
     // Aktionsleiste
     HorizontalLayout {
         spacing: 12px;
+
+        Button {
+            text: BudgetState.show-settings ? "Einstellungen ▲" : "Einstellungen ▼";
+            clicked => { BudgetState.toggle-settings(); }
+        }
 
         Button { text: "Zurücksetzen"; clicked => { BudgetState.do-reset(); } }
 

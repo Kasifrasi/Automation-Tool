@@ -1,6 +1,7 @@
 use calamine::{open_workbook_auto, Data, Range, Reader};
 use fb_generator::{
-    Currency, Language, PositionEntry, ReportBody, ReportConfig, ReportHeader, TableEntry,
+    Currency, Language, PositionEntry, ReportBody, ReportConfig, ReportHeader, ReportOptions,
+    TableEntry,
 };
 use rayon::prelude::*;
 use std::io::Write;
@@ -424,7 +425,7 @@ fn extract_category(number: &str) -> Option<u8> {
 }
 
 /// Konvertiert `BudgetData` in eine `ReportConfig` für den FB-Generator.
-pub fn budget_to_report_config(data: &BudgetData) -> ReportConfig {
+pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions) -> ReportConfig {
     let language = data
         .language
         .parse::<Language>()
@@ -514,6 +515,7 @@ pub fn budget_to_report_config(data: &BudgetData) -> ReportConfig {
     ReportConfig::builder()
         .header(header)
         .body(body.build())
+        .options(options)
         .build()
 }
 
