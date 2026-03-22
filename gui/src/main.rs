@@ -450,52 +450,6 @@ fn main() -> Result<(), slint::PlatformError> {
                 let columns = b2f.get_table_columns();
 
                 if let Some(path) = rfd::FileDialog::new()
-                    .set_file_name("scan_ergebnis.txt")
-                    .add_filter("Text", &["txt"])
-                    .save_file()
-                {
-                    let mut out = String::new();
-                    // Header
-                    let col_count = columns.row_count();
-                    for c in 0..col_count {
-                        if c > 0 { out.push('\t'); }
-                        out.push_str(&columns.row_data(c).map(|col| col.title.to_string()).unwrap_or_default());
-                    }
-                    out.push('\n');
-                    // Rows
-                    for r in 0..table_data.row_count() {
-                        if let Some(row) = table_data.row_data(r) {
-                            for c in 0..col_count {
-                                if c > 0 { out.push('\t'); }
-                                out.push_str(&row.row_data(c).map(|item| item.text.to_string()).unwrap_or_default());
-                            }
-                            out.push('\n');
-                        }
-                    }
-                    match std::fs::write(&path, &out) {
-                        Ok(()) => {
-                            b2f.set_status_type("success".into());
-                            b2f.set_status_message(format!("TXT exportiert: {}", path.display()).into());
-                        }
-                        Err(e) => {
-                            b2f.set_status_type("error".into());
-                            b2f.set_status_message(format!("TXT-Export Fehler: {e}").into());
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    ui.global::<BudgetState>().on_do_export_excel({
-        let ui_handle = ui.as_weak();
-        move || {
-            if let Some(ui) = ui_handle.upgrade() {
-                let b2f = ui.global::<BudgetState>();
-                let table_data = b2f.get_table_data();
-                let columns = b2f.get_table_columns();
-
-                if let Some(path) = rfd::FileDialog::new()
                     .set_file_name("scan_ergebnis.csv")
                     .add_filter("CSV", &["csv"])
                     .save_file()
@@ -524,6 +478,54 @@ fn main() -> Result<(), slint::PlatformError> {
                         Err(e) => {
                             b2f.set_status_type("error".into());
                             b2f.set_status_message(format!("CSV-Export Fehler: {e}").into());
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    ui.global::<BudgetState>().on_do_export_excel({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let b2f = ui.global::<BudgetState>();
+                let table_data = b2f.get_table_data();
+                let columns = b2f.get_table_columns();
+
+                if let Some(path) = rfd::FileDialog::new()
+                    .set_file_name("scan_ergebnis.xlsx")
+                    .add_filter("Excel", &["xlsx"])
+                    .save_file()
+                {
+                    let col_count = columns.row_count();
+                    let mut workbook = rust_xlsxwriter::Workbook::new();
+                    let sheet = workbook.add_worksheet();
+
+                    // Header
+                    for c in 0..col_count {
+                        let title = columns.row_data(c).map(|col| col.title.to_string()).unwrap_or_default();
+                        let _ = sheet.write_string(0, c as u16, &title);
+                    }
+
+                    // Rows
+                    for r in 0..table_data.row_count() {
+                        if let Some(row) = table_data.row_data(r) {
+                            for c in 0..col_count {
+                                let text = row.row_data(c).map(|item| item.text.to_string()).unwrap_or_default();
+                                let _ = sheet.write_string((r + 1) as u32, c as u16, &text);
+                            }
+                        }
+                    }
+
+                    match workbook.save(&path) {
+                        Ok(()) => {
+                            b2f.set_status_type("success".into());
+                            b2f.set_status_message(format!("Excel exportiert: {}", path.display()).into());
+                        }
+                        Err(e) => {
+                            b2f.set_status_type("error".into());
+                            b2f.set_status_message(format!("Excel-Export Fehler: {e}").into());
                         }
                     }
                 }

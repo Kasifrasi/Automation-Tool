@@ -477,13 +477,10 @@ pub fn budget_to_report_config(data: &BudgetData) -> ReportConfig {
 
         if subs.is_empty() {
             // Keine Sub-Positionen → header-input aus Hauptkategorie
-            if let Some(main_pos) = cat_main[ci] {
-                let mut entry = PositionEntry::builder();
-                if let Some(v) = parse_f64(&main_pos.cost_col1) {
-                    entry = entry.approved(v);
-                }
-                body = body.set_header_input(cat, entry.build());
-            }
+            let approved = cat_main[ci]
+                .and_then(|p| parse_f64(&p.cost_col1))
+                .unwrap_or(0.0);
+            body = body.set_header_input(cat, PositionEntry::builder().approved(approved).build());
         } else {
             // Trailing-Zero-Trimming: letzte relevante Position finden
             // Relevant = hat Label ODER cost_col1 ≠ 0
@@ -496,15 +493,20 @@ pub fn budget_to_report_config(data: &BudgetData) -> ReportConfig {
                 .map(|i| i + 1)
                 .unwrap_or(0);
 
-            for pos in &subs[..last_relevant] {
-                let mut entry = PositionEntry::builder();
-                if !pos.label.is_empty() {
-                    entry = entry.description(&pos.label);
+            // Relevante Zeilen + 3 leere, mindestens 5 total
+            let count = (last_relevant + 3).max(5);
+            for i in 0..count {
+                if let Some(pos) = subs.get(i) {
+                    let approved = parse_f64(&pos.cost_col1).unwrap_or(0.0);
+                    let mut entry = PositionEntry::builder().approved(approved);
+                    if !pos.label.is_empty() {
+                        entry = entry.description(&pos.label);
+                    }
+                    body = body.add_position(cat, entry.build());
+                } else {
+                    // Padding-Zeile mit 0
+                    body = body.add_position(cat, PositionEntry::builder().approved(0.0).build());
                 }
-                if let Some(v) = parse_f64(&pos.cost_col1) {
-                    entry = entry.approved(v);
-                }
-                body = body.add_position(cat, entry.build());
             }
         }
     }
