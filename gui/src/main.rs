@@ -726,9 +726,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 }
                 if b2f.get_protect_workbook() {
                     let pw = b2f.get_workbook_password().to_string();
-                    if !pw.is_empty() {
-                        options_builder = options_builder.workbook_password(pw);
-                    }
+                    options_builder = options_builder.workbook_password(pw);
                 }
                 options_builder = options_builder
                     .hide_columns_qv(b2f.get_hide_columns())
@@ -1070,9 +1068,7 @@ fn generate_excel(
     }
 
     // Mappenschutz-Hash vorab berechnen (~25ms Ersparnis pro Datei)
-    let precomputed_hash = workbook_pw
-        .filter(|pw| !pw.is_empty())
-        .map(fb_generator::precompute_hash);
+    let precomputed_hash = workbook_pw.map(fb_generator::precompute_hash);
 
     let mut count = 0;
 

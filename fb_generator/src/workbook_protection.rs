@@ -107,6 +107,8 @@ pub struct PrecomputedHash {
     pub salt_b64: String,
     pub hash_b64: String,
     pub spin_count: u32,
+    /// If true, no password was set — use `lockStructure="1"` without hash attributes.
+    pub password_empty: bool,
 }
 
 /// Fast spin count (sufficient to deter casual users)
@@ -198,11 +200,20 @@ pub fn precompute_hash(password: &str) -> PrecomputedHash {
 
 /// Computes the workbook protection hash once with a fixed salt and configurable spin count.
 pub fn precompute_hash_with_spin_count(password: &str, spin_count: u32) -> PrecomputedHash {
+    if password.is_empty() {
+        return PrecomputedHash {
+            salt_b64: String::new(),
+            hash_b64: String::new(),
+            spin_count,
+            password_empty: true,
+        };
+    }
     let hash_b64 = compute_hash(password, &FIXED_SALT, spin_count);
     PrecomputedHash {
         salt_b64: general_purpose::STANDARD.encode(FIXED_SALT),
         hash_b64,
         spin_count,
+        password_empty: false,
     }
 }
 
@@ -215,7 +226,15 @@ pub fn protect_workbook_precomputed(
     output_path: &str,
     hash: &PrecomputedHash,
 ) -> Result<(), ProtectionError> {
-    write_protected_zip(input_path, output_path, &hash.salt_b64, &hash.hash_b64, hash.spin_count)
+    let protection_tag = if hash.password_empty {
+        r#"<workbookProtection lockStructure="1"/>"#.to_string()
+    } else {
+        format!(
+            r#"<workbookProtection lockStructure="1" workbookAlgorithmName="SHA-512" workbookHashValue="{}" workbookSaltValue="{}" workbookSpinCount="{}"/>"#,
+            hash.hash_b64, hash.salt_b64, hash.spin_count
+        )
+    };
+    write_protected_zip(input_path, output_path, &protection_tag)
 }
 
 /// Protects the workbook structure of an existing Excel file with a password.
@@ -229,14 +248,25 @@ pub fn protect_workbook(input_path: &str, output_path: &str, password: &str) -> 
 }
 
 /// Protects the workbook structure with a configurable spin count.
+///
+/// If `password` is empty, the workbook is locked without a password
+/// (`lockStructure="1"` only, no hash attributes).
 pub fn protect_workbook_with_spin_count(
     input_path: &str,
     output_path: &str,
     password: &str,
     spin_count: u32,
 ) -> Result<(), ProtectionError> {
-    let (salt_b64, hash_b64) = hash_password(password, spin_count);
-    write_protected_zip(input_path, output_path, &salt_b64, &hash_b64, spin_count)
+    let protection_tag = if password.is_empty() {
+        r#"<workbookProtection lockStructure="1"/>"#.to_string()
+    } else {
+        let (salt_b64, hash_b64) = hash_password(password, spin_count);
+        format!(
+            r#"<workbookProtection lockStructure="1" workbookAlgorithmName="SHA-512" workbookHashValue="{}" workbookSaltValue="{}" workbookSpinCount="{}"/>"#,
+            hash_b64, salt_b64, spin_count
+        )
+    };
+    write_protected_zip(input_path, output_path, &protection_tag)
 }
 
 /// Core function: read ZIP, inject protection tag into workbook.xml, write back.
@@ -247,9 +277,7 @@ pub fn protect_workbook_with_spin_count(
 fn write_protected_zip(
     input_path: &str,
     output_path: &str,
-    salt_b64: &str,
-    hash_b64: &str,
-    spin_count: u32,
+    protection_tag: &str,
 ) -> Result<(), ProtectionError> {
     let file = File::open(input_path)?;
     let mut archive = ZipArchive::new(file)?;
@@ -267,7 +295,7 @@ fn write_protected_zip(
             let mut content = Vec::new();
             file.read_to_end(&mut content)?;
 
-            let new_xml = inject_protection(&content, salt_b64, hash_b64, spin_count)?;
+            let new_xml = inject_protection(&content, protection_tag)?;
             let options = FileOptions::<()>::default()
                 .compression_method(compression)
                 .unix_permissions(unix_mode.unwrap_or(0o644));
@@ -325,17 +353,12 @@ fn hash_password(password: &str, spin_count: u32) -> (String, String) {
 ///
 /// Respects the strict XSD element order:
 /// the element must be inserted BEFORE `<bookViews>` or `<sheets>`.
-fn inject_protection(xml_content: &[u8], salt: &str, hash: &str, spin_count: u32) -> Result<Vec<u8>, ProtectionError> {
+fn inject_protection(xml_content: &[u8], protection_elem_str: &str) -> Result<Vec<u8>, ProtectionError> {
     let mut reader = Reader::from_reader(xml_content);
 
     let mut writer = Writer::new(Cursor::new(Vec::new()));
     let mut buf = Vec::new();
     let mut inserted = false;
-
-    let protection_elem_str = format!(
-        r#"<workbookProtection lockStructure="1" workbookAlgorithmName="SHA-512" workbookHashValue="{}" workbookSaltValue="{}" workbookSpinCount="{}"/>"#,
-        hash, salt, spin_count
-    );
 
     loop {
         match reader.read_event_into(&mut buf) {
