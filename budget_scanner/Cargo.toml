@@ -11,3 +11,4 @@ license.workspace = true
 calamine = "0.34.0"
 regex = "1"
 walkdir = "2"
+comfy-table = "7"
