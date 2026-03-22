@@ -1,4 +1,4 @@
-import { Button, CheckBox, LineEdit, Palette, StandardTableView } from "std-widgets.slint";
+import { Button, LineEdit, Palette, StandardTableView } from "std-widgets.slint";
 import { Card, StatusBanner } from "components.slint";
 import { BudgetState } from "state.slint";
 
@@ -15,9 +15,9 @@ export component BudgetPage inherits VerticalLayout {
         dismiss => { BudgetState.dismiss-status(); }
     }
 
-    // Pfade & Optionen
+    // Pfade
     Card {
-        title: "Pfade & Optionen";
+        title: "Pfade";
         VerticalLayout {
             spacing: 10px;
 
@@ -40,31 +40,6 @@ export component BudgetPage inherits VerticalLayout {
                     spacing: 8px;
                     LineEdit { text <=> BudgetState.out-folder; read-only: true; placeholder-text: "Bitte wählen..."; horizontal-stretch: 1; }
                     Button { text: "Ausgabe..."; clicked => { BudgetState.select-out(); } }
-                }
-            }
-
-            Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
-
-            // Optionen
-            HorizontalLayout {
-                spacing: 16px;
-
-                VerticalLayout {
-                    spacing: 4px;
-                    Text { text: "Export-Name"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
-                    LineEdit { text <=> BudgetState.filename; placeholder-text: "v2_scan"; width: 200px; }
-                }
-
-                VerticalLayout {
-                    spacing: 8px;
-                    alignment: start;
-                    Text { text: "Optionen"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
-                    HorizontalLayout {
-                        spacing: 16px;
-                        CheckBox { text: ".xlsm scannen"; checked <=> BudgetState.include-xlsm; }
-                        CheckBox { text: "TXT Export"; checked <=> BudgetState.export-txt; }
-                        CheckBox { text: "CSV Export"; checked <=> BudgetState.export-csv; }
-                    }
                 }
             }
         }

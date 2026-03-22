@@ -5,6 +5,7 @@ slint::include_modules!();
 use fb_generator::{
     Language, PositionEntry, ReportBody, ReportConfig, ReportHeader, ReportOptions, SheetProtection,
 };
+use slint::Model;
 use std::path::PathBuf;
 
 // ==========================================
@@ -70,10 +71,6 @@ fn apply_b2f_defaults(ui: &MainWindow) {
     let b2f = ui.global::<BudgetState>();
     b2f.set_src_folder("".into());
     b2f.set_out_folder("".into());
-    b2f.set_filename("v2_scan".into());
-    b2f.set_include_xlsm(true);
-    b2f.set_export_txt(false);
-    b2f.set_export_csv(false);
     b2f.set_status_type("idle".into());
     b2f.set_status_message("".into());
 }
@@ -449,8 +446,43 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 let b2f = ui.global::<BudgetState>();
-                b2f.set_status_type("success".into());
-                b2f.set_status_message("TXT-Export noch nicht implementiert.".into());
+                let table_data = b2f.get_table_data();
+                let columns = b2f.get_table_columns();
+
+                if let Some(path) = rfd::FileDialog::new()
+                    .set_file_name("scan_ergebnis.txt")
+                    .add_filter("Text", &["txt"])
+                    .save_file()
+                {
+                    let mut out = String::new();
+                    // Header
+                    let col_count = columns.row_count();
+                    for c in 0..col_count {
+                        if c > 0 { out.push('\t'); }
+                        out.push_str(&columns.row_data(c).map(|col| col.title.to_string()).unwrap_or_default());
+                    }
+                    out.push('\n');
+                    // Rows
+                    for r in 0..table_data.row_count() {
+                        if let Some(row) = table_data.row_data(r) {
+                            for c in 0..col_count {
+                                if c > 0 { out.push('\t'); }
+                                out.push_str(&row.row_data(c).map(|item| item.text.to_string()).unwrap_or_default());
+                            }
+                            out.push('\n');
+                        }
+                    }
+                    match std::fs::write(&path, &out) {
+                        Ok(()) => {
+                            b2f.set_status_type("success".into());
+                            b2f.set_status_message(format!("TXT exportiert: {}", path.display()).into());
+                        }
+                        Err(e) => {
+                            b2f.set_status_type("error".into());
+                            b2f.set_status_message(format!("TXT-Export Fehler: {e}").into());
+                        }
+                    }
+                }
             }
         }
     });
@@ -460,8 +492,41 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 let b2f = ui.global::<BudgetState>();
-                b2f.set_status_type("success".into());
-                b2f.set_status_message("Excel-Export noch nicht implementiert.".into());
+                let table_data = b2f.get_table_data();
+                let columns = b2f.get_table_columns();
+
+                if let Some(path) = rfd::FileDialog::new()
+                    .set_file_name("scan_ergebnis.csv")
+                    .add_filter("CSV", &["csv"])
+                    .save_file()
+                {
+                    let mut out = String::new();
+                    let col_count = columns.row_count();
+                    for c in 0..col_count {
+                        if c > 0 { out.push(';'); }
+                        out.push_str(&columns.row_data(c).map(|col| col.title.to_string()).unwrap_or_default());
+                    }
+                    out.push('\n');
+                    for r in 0..table_data.row_count() {
+                        if let Some(row) = table_data.row_data(r) {
+                            for c in 0..col_count {
+                                if c > 0 { out.push(';'); }
+                                out.push_str(&row.row_data(c).map(|item| item.text.to_string()).unwrap_or_default());
+                            }
+                            out.push('\n');
+                        }
+                    }
+                    match std::fs::write(&path, &out) {
+                        Ok(()) => {
+                            b2f.set_status_type("success".into());
+                            b2f.set_status_message(format!("CSV exportiert: {}", path.display()).into());
+                        }
+                        Err(e) => {
+                            b2f.set_status_type("error".into());
+                            b2f.set_status_message(format!("CSV-Export Fehler: {e}").into());
+                        }
+                    }
+                }
             }
         }
     });

@@ -455,45 +455,58 @@ pub fn budget_to_report_config(data: &BudgetData) -> ReportConfig {
         body = body.drittmittel(TableEntry::builder().approved_budget(v).build());
     }
 
-    // Positionen nach Kategorie — erst analysieren, welche Kategorien Sub-Positionen haben
-    let mut cats_with_subs = [false; 9]; // Index 1–8
-    for pos in &data.positions {
-        if let Some(cat) = extract_category(&pos.number) {
-            if !pos.number.ends_with('.') && (cat as usize) < 9 {
-                cats_with_subs[cat as usize] = true;
-            }
-        }
-    }
+    // Positionen nach Kategorie gruppieren
+    let mut cat_subs: [Vec<&BudgetPosition>; 9] = Default::default();
+    let mut cat_main: [Option<&BudgetPosition>; 9] = [None; 9];
 
     for pos in &data.positions {
         let cat = match extract_category(&pos.number) {
-            Some(c) if (1..=8).contains(&c) => c,
+            Some(c) if (1..=8).contains(&c) => c as usize,
             _ => continue,
         };
-
-        let is_main = pos.number.ends_with('.');
-        let has_subs = cats_with_subs[cat as usize];
-        let approved = parse_f64(&pos.cost_col1);
-
-        if is_main && !has_subs {
-            // Kategorie ohne Sub-Positionen → header-input
-            let mut entry = PositionEntry::builder();
-            if let Some(v) = approved {
-                entry = entry.approved(v);
-            }
-            body = body.set_header_input(cat, entry.build());
-        } else if !is_main {
-            // Sub-Position (1.1, 2.3, etc.) → add_position
-            let mut entry = PositionEntry::builder();
-            if !pos.label.is_empty() {
-                entry = entry.description(&pos.label);
-            }
-            if let Some(v) = approved {
-                entry = entry.approved(v);
-            }
-            body = body.add_position(cat, entry.build());
+        if pos.number.ends_with('.') {
+            cat_main[cat] = Some(pos);
+        } else {
+            cat_subs[cat].push(pos);
         }
-        // Hauptkategorie mit Subs (z.B. "1.") → überspringen (nur Überschrift)
+    }
+
+    for cat in 1u8..=8 {
+        let ci = cat as usize;
+        let subs = &cat_subs[ci];
+
+        if subs.is_empty() {
+            // Keine Sub-Positionen → header-input aus Hauptkategorie
+            if let Some(main_pos) = cat_main[ci] {
+                let mut entry = PositionEntry::builder();
+                if let Some(v) = parse_f64(&main_pos.cost_col1) {
+                    entry = entry.approved(v);
+                }
+                body = body.set_header_input(cat, entry.build());
+            }
+        } else {
+            // Trailing-Zero-Trimming: letzte relevante Position finden
+            // Relevant = hat Label ODER cost_col1 ≠ 0
+            let last_relevant = subs
+                .iter()
+                .rposition(|p| {
+                    !p.label.trim().is_empty()
+                        || parse_f64(&p.cost_col1).map_or(false, |v| v != 0.0)
+                })
+                .map(|i| i + 1)
+                .unwrap_or(0);
+
+            for pos in &subs[..last_relevant] {
+                let mut entry = PositionEntry::builder();
+                if !pos.label.is_empty() {
+                    entry = entry.description(&pos.label);
+                }
+                if let Some(v) = parse_f64(&pos.cost_col1) {
+                    entry = entry.approved(v);
+                }
+                body = body.add_position(cat, entry.build());
+            }
+        }
     }
 
     ReportConfig::builder()
