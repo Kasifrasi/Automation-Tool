@@ -60,6 +60,8 @@ export global FBState {
     in-out property <bool> hide-columns;
     in-out property <bool> hide-lang-sheet;
 
+    in-out property <bool> show-settings: true;
+
     in-out property <string> status-type: "idle";
     in-out property <string> status-message: "";
 
@@ -68,6 +70,7 @@ export global FBState {
     callback reset();
     callback dismiss-status();
     callback save-settings();
+    callback toggle-settings();
 }
 
 // ========================================

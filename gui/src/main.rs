@@ -507,6 +507,16 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    ui.global::<FBState>().on_toggle_settings({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let fb = ui.global::<FBState>();
+                fb.set_show_settings(!fb.get_show_settings());
+            }
+        }
+    });
+
     ui.global::<FBState>().on_generate_report({
         let ui_handle = ui.as_weak();
         move || {
