@@ -42,15 +42,16 @@ export component FBPage inherits VerticalLayout {
                         FBState.langs.es = false;
                         FBState.langs.pt = false;
                     }
+                    FBState.save-settings();
                 }
             }
             HorizontalLayout {
                 spacing: 16px;
-                CheckBox { text: "Deutsch"; checked <=> FBState.langs.de; }
-                CheckBox { text: "English"; checked <=> FBState.langs.en; }
-                CheckBox { text: "Français"; checked <=> FBState.langs.fr; }
-                CheckBox { text: "Español"; checked <=> FBState.langs.es; }
-                CheckBox { text: "Português"; checked <=> FBState.langs.pt; }
+                CheckBox { text: "Deutsch"; checked <=> FBState.langs.de; toggled => { FBState.save-settings(); } }
+                CheckBox { text: "English"; checked <=> FBState.langs.en; toggled => { FBState.save-settings(); } }
+                CheckBox { text: "Français"; checked <=> FBState.langs.fr; toggled => { FBState.save-settings(); } }
+                CheckBox { text: "Español"; checked <=> FBState.langs.es; toggled => { FBState.save-settings(); } }
+                CheckBox { text: "Português"; checked <=> FBState.langs.pt; toggled => { FBState.save-settings(); } }
             }
         }
     }
@@ -66,14 +67,14 @@ export component FBPage inherits VerticalLayout {
             clip: true;
             GridBox {
                 spacing: 6px;
-                Row { Text { text: "1. Bauausgaben"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat1; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "2. Investitionen"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat2; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "3. Personalkosten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat3; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "4. Projektaktivitäten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat4; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "5. Projektverwaltung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat5; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "6. Evaluierung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat6; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "7. Audit"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat7; minimum: 0; col: 1; max-width: 120px; } }
-                Row { Text { text: "8. Reserve"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat8; minimum: 0; col: 1; max-width: 120px; } }
+                Row { Text { text: "1. Bauausgaben"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat1; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "2. Investitionen"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat2; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "3. Personalkosten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat3; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "4. Projektaktivitäten"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat4; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "5. Projektverwaltung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat5; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "6. Evaluierung"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat6; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "7. Audit"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat7; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
+                Row { Text { text: "8. Reserve"; font-size: 13px; color: Palette.foreground; opacity: 0.8; vertical-alignment: center; overflow: elide; } CategorySpinBox { value <=> FBState.categories.cat8; minimum: 0; col: 1; max-width: 120px; changed => { FBState.save-settings(); } } }
             }
         }
 
@@ -84,8 +85,8 @@ export component FBPage inherits VerticalLayout {
                 spacing: 8px;
                 HorizontalLayout {
                     spacing: 16px;
-                    CheckBox { text: "Blattschutz"; checked <=> FBState.protect-sheet; }
-                    CheckBox { text: "Mappenschutz"; checked <=> FBState.protect-workbook; }
+                    CheckBox { text: "Blattschutz"; checked <=> FBState.protect-sheet; toggled => { FBState.save-settings(); } }
+                    CheckBox { text: "Mappenschutz"; checked <=> FBState.protect-workbook; toggled => { FBState.save-settings(); } }
                 }
                 HorizontalLayout {
                     spacing: 8px;
@@ -95,7 +96,7 @@ export component FBPage inherits VerticalLayout {
                         VerticalLayout {
                             padding: 10px; spacing: 3px;
                             Text { text: "Blatt-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
-                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.sheet-password; enabled: FBState.protect-sheet; }
+                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.sheet-password; enabled: FBState.protect-sheet; edited => { FBState.save-settings(); } }
                         }
                     }
                     Rectangle {
@@ -104,7 +105,7 @@ export component FBPage inherits VerticalLayout {
                         VerticalLayout {
                             padding: 10px; spacing: 3px;
                             Text { text: "Mappen-Passwort"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
-                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.workbook-password; enabled: FBState.protect-workbook; }
+                            LineEdit { input-type: InputType.password; placeholder-text: "Standard: thetool"; text <=> FBState.workbook-password; enabled: FBState.protect-workbook; edited => { FBState.save-settings(); } }
                         }
                     }
                 }
@@ -118,14 +119,14 @@ export component FBPage inherits VerticalLayout {
                 }
                 GridBox {
                     spacing: 2px;
-                    Row { CheckBox { text: "Gesperrte Zellen wählen"; checked <=> FBState.sheet-permissions.select-locked; enabled: FBState.protect-sheet; } CheckBox { text: "Spalten löschen"; checked <=> FBState.sheet-permissions.delete-columns; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Freie Zellen wählen"; checked <=> FBState.sheet-permissions.select-unlocked; enabled: FBState.protect-sheet; } CheckBox { text: "Zeilen löschen"; checked <=> FBState.sheet-permissions.delete-rows; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Zellen formatieren"; checked <=> FBState.sheet-permissions.format-cells; enabled: FBState.protect-sheet; } CheckBox { text: "Sortieren"; checked <=> FBState.sheet-permissions.sort; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Spalten formatieren"; checked <=> FBState.sheet-permissions.format-columns; enabled: FBState.protect-sheet; } CheckBox { text: "Autofilter"; checked <=> FBState.sheet-permissions.autofilter; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Zeilen formatieren"; checked <=> FBState.sheet-permissions.format-rows; enabled: FBState.protect-sheet; } CheckBox { text: "Pivot-Tabellen"; checked <=> FBState.sheet-permissions.pivot-tables; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Spalten einfügen"; checked <=> FBState.sheet-permissions.insert-columns; enabled: FBState.protect-sheet; } CheckBox { text: "Objekte bearbeiten"; checked <=> FBState.sheet-permissions.edit-objects; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Zeilen einfügen"; checked <=> FBState.sheet-permissions.insert-rows; enabled: FBState.protect-sheet; } CheckBox { text: "Szenarien"; checked <=> FBState.sheet-permissions.edit-scenarios; enabled: FBState.protect-sheet; } }
-                    Row { CheckBox { text: "Links einfügen"; checked <=> FBState.sheet-permissions.insert-hyperlinks; enabled: FBState.protect-sheet; } CheckBox { text: "Inhalte schützen"; checked <=> FBState.sheet-permissions.contents; enabled: FBState.protect-sheet; } }
+                    Row { CheckBox { text: "Gesperrte Zellen wählen"; checked <=> FBState.sheet-permissions.select-locked; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Spalten löschen"; checked <=> FBState.sheet-permissions.delete-columns; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Freie Zellen wählen"; checked <=> FBState.sheet-permissions.select-unlocked; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Zeilen löschen"; checked <=> FBState.sheet-permissions.delete-rows; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Zellen formatieren"; checked <=> FBState.sheet-permissions.format-cells; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Sortieren"; checked <=> FBState.sheet-permissions.sort; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Spalten formatieren"; checked <=> FBState.sheet-permissions.format-columns; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Autofilter"; checked <=> FBState.sheet-permissions.autofilter; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Zeilen formatieren"; checked <=> FBState.sheet-permissions.format-rows; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Pivot-Tabellen"; checked <=> FBState.sheet-permissions.pivot-tables; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Spalten einfügen"; checked <=> FBState.sheet-permissions.insert-columns; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Objekte bearbeiten"; checked <=> FBState.sheet-permissions.edit-objects; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Zeilen einfügen"; checked <=> FBState.sheet-permissions.insert-rows; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Szenarien"; checked <=> FBState.sheet-permissions.edit-scenarios; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
+                    Row { CheckBox { text: "Links einfügen"; checked <=> FBState.sheet-permissions.insert-hyperlinks; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } CheckBox { text: "Inhalte schützen"; checked <=> FBState.sheet-permissions.contents; enabled: FBState.protect-sheet; toggled => { FBState.save-settings(); } } }
                 }
             }
         }
@@ -139,13 +140,13 @@ export component FBPage inherits VerticalLayout {
             VerticalLayout {
                 spacing: 4px;
                 Text { text: "Version"; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.8; }
-                LineEdit { text <=> FBState.version; placeholder-text: "z.B. v2025-1"; width: 160px; }
+                LineEdit { text <=> FBState.version; placeholder-text: "z.B. v2025-1"; width: 160px; edited => { FBState.save-settings(); } }
             }
             Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
             HorizontalLayout {
                 spacing: 16px;
-                CheckBox { text: "Spalten Q:V ausblenden"; checked <=> FBState.hide-columns; }
-                CheckBox { text: "Sprachblatt ausblenden"; checked <=> FBState.hide-lang-sheet; }
+                CheckBox { text: "Spalten Q:V ausblenden"; checked <=> FBState.hide-columns; toggled => { FBState.save-settings(); } }
+                CheckBox { text: "Sprachblatt ausblenden"; checked <=> FBState.hide-lang-sheet; toggled => { FBState.save-settings(); } }
             }
             Rectangle { height: 1px; background: Palette.border; opacity: 0.3; }
             VerticalLayout {

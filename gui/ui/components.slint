@@ -135,6 +135,7 @@ export component CategorySpinBox inherits HorizontalLayout {
     in-out property <int> value: 0;
     in property <int> minimum: 0;
     in property <int> maximum: 999;
+    callback changed();
 
     spacing: 2px;
 
@@ -150,6 +151,7 @@ export component CategorySpinBox inherits HorizontalLayout {
             } else {
                 root.value = max(root.minimum, min(root.maximum, text.to-float()));
             }
+            root.changed();
         }
     }
 
@@ -167,6 +169,7 @@ export component CategorySpinBox inherits HorizontalLayout {
                 if root.value > root.minimum {
                     root.value -= 1;
                 }
+                root.changed();
             }
         }
 
@@ -194,6 +197,7 @@ export component CategorySpinBox inherits HorizontalLayout {
                 if root.value < root.maximum {
                     root.value += 1;
                 }
+                root.changed();
             }
         }
 

@@ -482,6 +482,7 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 apply_fb_defaults(&ui);
+                save_fb_settings(&ui);
             }
         }
     });
