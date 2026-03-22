@@ -43,7 +43,6 @@
     "init_hook": [
       "rustup default stable",
       "rustup component add rust-src rust-analyzer",
-      "if [ -d '.git' ] && command -v prek > /dev/null; then prek install || true; fi",
       "export LD_LIBRARY_PATH=\"$DEVBOX_PACKAGES_DIR/lib:/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH\"",
       "echo '🦀 Rust Dev Workspace | 🛡️ prek Hooks geladen via Devbox'"
     ],
