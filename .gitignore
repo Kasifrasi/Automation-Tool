@@ -13,6 +13,13 @@ target/
 /tmp/
 
 # =========================
+# Office & Temporary Lock Files
+# =========================
+.~lock.*#
+~$*.xlsx
+~$*.xlsm
+
+# =========================
 # Environment & Secrets
 # =========================
 .env

@@ -16,7 +16,7 @@ fn main() {
             eprintln!("Fehler beim Öffnen der Datei '{}': {}", path, e);
             std::process::exit(1);
         }
-        Ok(wb) => {
+        Ok(mut wb) => {
             let sheet_names = wb.sheet_names();
             if sheet_names.iter().any(|s| s == "Budget") {
                 println!("Sheet 'Budget' existiert in der Datei.");
