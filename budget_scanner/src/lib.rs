@@ -455,6 +455,7 @@ pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions, versio
     if let Some(v) = parse_f64(&data.drittmittel) {
         body = body.drittmittel(TableEntry::builder().approved_budget(v).build());
     }
+    body = body.zinsertraege(TableEntry::builder().approved_budget(0.0).build());
 
     // Positionen nach Kategorie gruppieren
     let mut cat_subs: [Vec<&BudgetPosition>; 9] = Default::default();

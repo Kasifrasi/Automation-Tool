@@ -750,7 +750,11 @@ fn main() -> Result<(), slint::PlatformError> {
                         .file_stem()
                         .unwrap_or_default()
                         .to_string_lossy();
-                    let fb_name = format!("{stem}_FB.xlsx");
+                    let fb_name = if version.is_empty() {
+                        format!("{stem}_FB.xlsx")
+                    } else {
+                        format!("{stem}_{version}_FB.xlsx")
+                    };
                     let out_path = output_dir.join(
                         relative.with_file_name(&fb_name),
                     );
