@@ -526,7 +526,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 let folder = fb.get_folder().to_string();
                 if folder.is_empty() {
                     fb.set_status_type("error".into());
-                    fb.set_status_message("Bitte Zielordner wählen.".into());
+                    fb.set_status_message("Bitte Ausgabeordner wählen.".into());
                     return;
                 }
 
@@ -1027,7 +1027,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 let fs = ui.global::<FolderState>();
                 if fs.get_target_folder().is_empty() {
                     fs.set_status_type("error".into());
-                    fs.set_status_message("Bitte Zielordner wählen.".into());
+                    fs.set_status_message("Bitte Ausgabeordner wählen.".into());
                     return;
                 }
                 if fs.get_project_name().is_empty() {

@@ -22,41 +22,54 @@ export component BudgetPage inherits VerticalLayout {
         }
     }
 
-    // Ordner-Auswahl (kompakt)
+    // Ordner-Auswahl (50:50 aufgeteilt)
     HorizontalLayout {
-        spacing: 8px;
-        LineEdit {
-            text <=> BudgetState.src-folder;
-            read-only: true;
-            placeholder-text: "Quellordner...";
-            horizontal-stretch: 1;
-        }
+        spacing: 16px; // Abstand zwischen den beiden Haupt-Blöcken
 
-        Button {
-            text: "Quelle...";
-            clicked => {
-                BudgetState.select-src();
+        // Linker Block: Quelle
+        HorizontalLayout {
+            horizontal-stretch: 1;
+            spacing: 8px;
+
+            LineEdit {
+                text <=> BudgetState.src-folder;
+                read-only: true;
+                placeholder-text: "Quellordner...";
+                horizontal-stretch: 1; // Füllt den Platz innerhalb der linken 50%
+            }
+
+            Button {
+                text: "Quelle...";
+                clicked => {
+                    BudgetState.select-src();
+                }
             }
         }
 
-        LineEdit {
-            text <=> BudgetState.out-folder;
-            read-only: true;
-            placeholder-text: "Ausgabeordner...";
+        // Rechter Block: Ausgabe
+        HorizontalLayout {
             horizontal-stretch: 1;
-        }
+            spacing: 8px;
 
-        Button {
-            text: "Ausgabe...";
-            clicked => {
-                BudgetState.select-out();
+            LineEdit {
+                text <=> BudgetState.out-folder;
+                read-only: true;
+                placeholder-text: "Ausgabeordner...";
+                horizontal-stretch: 1; // Füllt den Platz innerhalb der rechten 50%
+            }
+
+            Button {
+                text: "Ausgabe...";
+                clicked => {
+                    BudgetState.select-out();
+                }
             }
         }
     }
 
     // Settings Panel (toggle)
     if BudgetState.show-settings: Card {
-        title: "Einstellungen";
+        title: "Erweiterte Einstellungen";
 
         VerticalLayout {
             spacing: 4px;
