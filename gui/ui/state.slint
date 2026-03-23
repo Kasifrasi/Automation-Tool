@@ -119,6 +119,10 @@ export global FolderState {
     in-out property <bool> folder-exists: false;
     in-out property <bool> project-name-valid: false;
 
+    // CSV-Import
+    in-out property <string> csv-file;
+    in-out property <string> csv-target-folder;
+
     in-out property <string> status-type: "idle";
     in-out property <string> status-message: "";
 
@@ -126,6 +130,9 @@ export global FolderState {
     callback select-template();
     callback validate-project-name();
     callback create-folders();
+    callback select-csv-file();
+    callback select-csv-target();
+    callback import-csv();
     callback reset();
     callback dismiss-status();
 }

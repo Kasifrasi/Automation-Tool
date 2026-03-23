@@ -479,6 +479,34 @@ fn is_valid_project_number(name: &str) -> bool {
     numeric || alpha
 }
 
+fn create_single_project_folder(
+    project_name: &str,
+    target: &std::path::Path,
+    template: &std::path::Path,
+) -> Result<std::path::PathBuf, String> {
+    let project_root = target.join(project_name);
+    if project_root.exists() {
+        return Err(format!("Ordner existiert bereits: {}", project_root.display()));
+    }
+
+    std::fs::create_dir(&project_root)
+        .map_err(|e| format!("Fehler beim Erstellen von '{project_name}': {e}"))?;
+
+    for sub in SUBFOLDERS {
+        std::fs::create_dir(project_root.join(sub))
+            .map_err(|e| format!("Fehler bei '{project_name}/{sub}': {e}"))?;
+    }
+
+    let ext = template.extension().and_then(|e| e.to_str()).unwrap_or("xlsm");
+    let dest = project_root.join(format!("Pruefung_{project_name}.{ext}"));
+    std::fs::copy(template, &dest)
+        .map_err(|e| format!("Fehler beim Kopieren der Vorlage für '{project_name}': {e}"))?;
+
+    let _ = std::fs::write(project_root.join(".root.txt"), "Ordner automatisch generiert.");
+
+    Ok(project_root)
+}
+
 fn validate_project_name(ui: &MainWindow) {
     let fs = ui.global::<FolderState>();
     let raw = fs.get_project_name().to_string();
@@ -561,6 +589,8 @@ fn apply_folder_defaults(ui: &MainWindow) {
     fs.set_skip_validation(false);
     fs.set_folder_exists(false);
     fs.set_project_name_valid(false);
+    fs.set_csv_file("".into());
+    fs.set_csv_target_folder("".into());
     fs.set_status_type("idle".into());
     fs.set_status_message("".into());
 }
@@ -1200,86 +1230,137 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    ui.global::<FolderState>().on_select_csv_file({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("CSV", &["csv"])
+                    .pick_file()
+                {
+                    ui.global::<FolderState>()
+                        .set_csv_file(path.to_string_lossy().to_string().into());
+                }
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_select_csv_target({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                if let Some(path) = rfd::FileDialog::new().pick_folder() {
+                    ui.global::<FolderState>()
+                        .set_csv_target_folder(path.to_string_lossy().to_string().into());
+                }
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_import_csv({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let fs = ui.global::<FolderState>();
+                let csv_path = PathBuf::from(fs.get_csv_file().to_string());
+                let target = PathBuf::from(fs.get_csv_target_folder().to_string());
+                let template = PathBuf::from(fs.get_template_file().to_string());
+
+                if !target.exists() {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message("CSV-Zielverzeichnis existiert nicht.".into());
+                    return;
+                }
+                if !template.exists() {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message("Excel-Vorlage nicht gefunden (oben im Einzelordner-Bereich auswählen).".into());
+                    return;
+                }
+
+                let content = match std::fs::read_to_string(&csv_path) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        fs.set_status_type("error".into());
+                        fs.set_status_message(format!("CSV konnte nicht gelesen werden: {e}").into());
+                        return;
+                    }
+                };
+
+                let mut created = 0u32;
+                let mut skipped = 0u32;
+                let mut errors = Vec::new();
+
+                for line in content.lines() {
+                    for cell in line.split([',', ';']) {
+                        let name = cell.trim().trim_matches('"').trim();
+                        if name.is_empty() {
+                            continue;
+                        }
+                        match create_single_project_folder(name, &target, &template) {
+                            Ok(_) => created += 1,
+                            Err(e) if e.starts_with("Ordner existiert") => skipped += 1,
+                            Err(e) => errors.push(e),
+                        }
+                    }
+                }
+
+                if errors.is_empty() {
+                    fs.set_status_type("success".into());
+                    fs.set_status_message(
+                        format!("{created} Ordner erstellt, {skipped} übersprungen (existierten bereits).").into(),
+                    );
+                } else {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message(
+                        format!(
+                            "{created} erstellt, {skipped} übersprungen, {} Fehler: {}",
+                            errors.len(),
+                            errors.join("; ")
+                        )
+                        .into(),
+                    );
+                }
+            }
+        }
+    });
+
     ui.global::<FolderState>().on_create_folders({
         let ui_handle = ui.as_weak();
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 let fs = ui.global::<FolderState>();
                 let project_name = fs.get_project_name().to_string();
-                let target = std::path::PathBuf::from(fs.get_target_folder().to_string());
-                let template = std::path::PathBuf::from(fs.get_template_file().to_string());
+                let target = PathBuf::from(fs.get_target_folder().to_string());
+                let template = PathBuf::from(fs.get_template_file().to_string());
 
-                // Validierung Projektname
-                let invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
                 if project_name.is_empty() {
                     fs.set_status_type("error".into());
                     fs.set_status_message("Bitte Projektnamen angeben.".into());
                     return;
                 }
-                if project_name.ends_with(' ') || project_name.ends_with('.') {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message("Projektname darf nicht mit Leerzeichen oder Punkt enden.".into());
-                    return;
-                }
-                if project_name.chars().any(|c| invalid_chars.contains(&c)) {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message(format!("Ungültige Zeichen im Projektnamen: {}", invalid_chars.iter().collect::<String>()).into());
-                    return;
-                }
-
-                // Zielordner prüfen
                 if !target.exists() {
                     fs.set_status_type("error".into());
                     fs.set_status_message("Zielverzeichnis existiert nicht.".into());
                     return;
                 }
-
-                // Excel-Vorlage prüfen
                 if !template.exists() {
                     fs.set_status_type("error".into());
                     fs.set_status_message("Excel-Vorlage nicht gefunden.".into());
                     return;
                 }
 
-                let project_root = target.join(&project_name);
-                if project_root.exists() {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message(format!("Projektordner existiert bereits: {}", project_root.display()).into());
-                    return;
-                }
-
-                // Ordner erstellen
-                if let Err(e) = std::fs::create_dir(&project_root) {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message(format!("Fehler beim Erstellen: {e}").into());
-                    return;
-                }
-                for sub in SUBFOLDERS {
-                    if let Err(e) = std::fs::create_dir(project_root.join(sub)) {
+                match create_single_project_folder(&project_name, &target, &template) {
+                    Ok(root) => {
+                        fs.set_project_name("".into());
+                        fs.set_project_name_valid(false);
+                        fs.set_status_type("success".into());
+                        fs.set_status_message(format!("Projektordner erstellt: {}", root.display()).into());
+                    }
+                    Err(e) => {
                         fs.set_status_type("error".into());
-                        fs.set_status_message(format!("Fehler beim Erstellen von '{sub}': {e}").into());
-                        return;
+                        fs.set_status_message(e.into());
                     }
                 }
-
-                // Template kopieren
-                let ext = template.extension().and_then(|e| e.to_str()).unwrap_or("xlsm");
-                let dest = project_root.join(format!("Pruefung_{project_name}.{ext}"));
-                if let Err(e) = std::fs::copy(&template, &dest) {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message(format!("Fehler beim Kopieren der Vorlage: {e}").into());
-                    return;
-                }
-
-                // .root.txt erstellen
-                let _ = std::fs::write(
-                    project_root.join(".root.txt"),
-                    "Ordner automatisch generiert.",
-                );
-
-                fs.set_project_name("".into());
-                fs.set_status_type("success".into());
-                fs.set_status_message(format!("Projektordner erstellt: {}", project_root.display()).into());
             }
         }
     });
