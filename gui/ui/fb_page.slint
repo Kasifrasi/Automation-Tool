@@ -106,14 +106,14 @@ export component FBPage inherits VerticalLayout {
                     VerticalLayout {
                         horizontal-stretch: 1;
                         spacing: 6px;
-                        CheckBox { text: "Blattschutz"; checked <=> FBState.protect-sheet; toggled => { FBState.save-settings(); } }
                         CheckBox { text: "Sprachblatt ausblenden"; checked <=> FBState.hide-lang-sheet; toggled => { FBState.save-settings(); } }
+                        CheckBox { text: "Blattschutz"; checked <=> FBState.protect-sheet; toggled => { FBState.save-settings(); } }
                     }
                     VerticalLayout {
                         horizontal-stretch: 1;
                         spacing: 6px;
-                        CheckBox { text: "Mappenschutz"; checked <=> FBState.protect-workbook; toggled => { FBState.save-settings(); } }
                         CheckBox { text: "Spalten Q:V ausblenden"; checked <=> FBState.hide-columns; toggled => { FBState.save-settings(); } }
+                        CheckBox { text: "Mappenschutz"; checked <=> FBState.protect-workbook; toggled => { FBState.save-settings(); } }
                     }
                 }
 
