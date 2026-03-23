@@ -423,7 +423,7 @@ fn apply_b2f_defaults(ui: &MainWindow) {
 struct FolderSettings {
     target_folder: String,
     template_file: String,
-}2025_0004_003
+}
 
 fn load_folder_settings(ui: &MainWindow) {
     let s: FolderSettings = confy::load(APP_NAME, "folder").unwrap_or_default();
