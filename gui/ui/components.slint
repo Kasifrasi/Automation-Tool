@@ -1,4 +1,4 @@
-import { Palette, LineEdit, CheckBox } from "std-widgets.slint";
+import { Palette, LineEdit, CheckBox, Button } from "std-widgets.slint";
 import { FBState } from "./state.slint";
 
 // ─── Wiederverwendbare Card-Komponente ───
@@ -268,6 +268,81 @@ export component PasswordField inherits Rectangle {
             text <=> root.password;
             enabled: root.is-enabled;
             edited => { root.changed(); } // Sag der Seite bescheid
+        }
+    }
+}
+
+// 1. Universelles Feld für Pfad- oder Dateiauswahl
+export component PathInputField inherits VerticalLayout {
+    in property <string> label;
+    in property <string> placeholder;
+    in-out property <string> value;
+    callback clicked();
+
+    spacing: 4px;
+    Text { 
+        text: root.label; 
+        font-size: 13px; font-weight: 600; opacity: 0.8; 
+    }
+    HorizontalLayout {
+        spacing: 8px;
+        LineEdit {
+            text <=> root.value;
+            read-only: true;
+            placeholder-text: root.placeholder;
+            horizontal-stretch: 1;
+        }
+        Button {
+            text: "Durchsuchen...";
+            clicked => { root.clicked(); }
+        }
+    }
+}
+
+// 2. Spezielles Feld für den Projektnamen mit Validierung
+export component ProjectNameField inherits VerticalLayout {
+    in-out property <string> project-name;
+    in-out property <bool> skip-validation;
+    in property <string> target-folder;
+    in property <bool> folder-exists;
+    callback validated();
+
+    spacing: 4px;
+    HorizontalLayout {
+        spacing: 8px;
+        Text {
+            text: "Projektbezeichnung";
+            font-size: 13px; font-weight: 600; opacity: 0.8;
+            vertical-alignment: center; horizontal-stretch: 1;
+        }
+        CheckBox {
+            text: "Freie Eingabe";
+            checked <=> root.skip-validation;
+            toggled => { root.validated(); }
+        }
+    }
+    HorizontalLayout {
+        spacing: 8px;
+        LineEdit {
+            text <=> root.project-name;
+            placeholder-text: "z.B. 2025_0004_003";
+            horizontal-stretch: 1;
+            edited => { root.validated(); }
+        }
+        // Validierungs-Logik Icons
+        if root.target-folder == "" : TouchArea {
+            width: 24px; height: 24px;
+            Text { text: "?"; font-size: 16px; font-weight: 700; opacity: 0.4; horizontal-alignment: center; vertical-alignment: center; }
+            if self.has-hover : Rectangle {
+                x: -140px; y: 24px; width: 160px; height: 28px;
+                background: Palette.background; border-color: Palette.border; border-width: 1px; border-radius: 4px;
+                Text { text: "Zielordner setzen"; font-size: 11px; horizontal-alignment: center; vertical-alignment: center; }
+            }
+        }
+        if root.target-folder != "" && root.project-name != "" : Text {
+            text: root.folder-exists ? "✗" : "✓";
+            color: root.folder-exists ? #f44336 : #4caf50;
+            font-size: 16px; font-weight: 700; vertical-alignment: center; width: 24px;
         }
     }
 }

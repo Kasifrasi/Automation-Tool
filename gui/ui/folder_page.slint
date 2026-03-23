@@ -1,305 +1,111 @@
-import { Button, CheckBox, LineEdit, Palette } from "std-widgets.slint";
-import { Card, StatusBanner } from "components.slint";
-import { FolderState } from "state.slint";
+import { Button, CheckBox, LineEdit, Palette, ScrollView } from "std-widgets.slint";
+import { Card, StatusBanner, PathInputField, ProjectNameField } from "components.slint";
+import { FolderState, GlobalUI } from "state.slint";
 
 export component FolderPage inherits VerticalLayout {
-    spacing: 12px;
-    vertical-stretch: 1;
-
-    // Status Anzeige
+    spacing: GlobalUI.spacing;
+    
+    // --- 1. FIXED HEADER (Status) ---
     if FolderState.status-type != "idle": StatusBanner {
         status-type: FolderState.status-type;
         status-message: FolderState.status-message;
-        dismiss => {
-            FolderState.dismiss-status();
-        }
+        dismiss => { FolderState.dismiss-status(); }
     }
 
-    // Einzelner Ordner — Card auf 75% Breite
-    HorizontalLayout {
-        alignment: start;
-        Card {
-            title: "Einzelner Ordner";
-            width: 75%;
-            max-height: 340px;
-            VerticalLayout {
-                spacing: 15px;
-
-                // Projektname
-                VerticalLayout {
-                    spacing: 4px;
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        Text {
-                            text: "Projektbezeichnung";
-                            font-size: 13px;
-                            font-weight: 600;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            horizontal-stretch: 1;
-                        }
-
-                        CheckBox {
-                            text: "Freie Eingabe";
-                            checked <=> FolderState.skip-validation;
-                            toggled => {
-                                FolderState.validate-project-name();
-                            }
-                        }
-                    }
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        LineEdit {
-                            text <=> FolderState.project-name;
-                            placeholder-text: "z.B. 2025_0004_003";
-                            horizontal-stretch: 1;
-                            edited => {
-                                FolderState.validate-project-name();
-                                self.set-selection-offsets(999, 999);
-                            }
-                        }
-
-                        if FolderState.target-folder == "": TouchArea {
-                            width: 24px;
-                            height: 24px;
-                            property <bool> show-tooltip: self.has-hover;
-                            Text {
-                                text: "?";
-                                font-size: 16px;
-                                font-weight: 700;
-                                color: Palette.foreground;
-                                opacity: 0.4;
-                                vertical-alignment: center;
-                                horizontal-alignment: center;
-                            }
-
-                            if show-tooltip: Rectangle {
-                                x: -140px;
-                                y: parent.height;
-                                width: 160px;
-                                height: 28px;
-                                background: Palette.background;
-                                border-color: Palette.border;
-                                border-width: 1px;
-                                border-radius: 4px;
-                                Text {
-                                    text: "Zielordner setzen";
-                                    font-size: 11px;
-                                    color: Palette.foreground;
-                                    horizontal-alignment: center;
-                                    vertical-alignment: center;
-                                }
-                            }
-                        }
-                        if FolderState.target-folder != "" && FolderState.project-name != "" && !FolderState.folder-exists: Text {
-                            text: "✓";
-                            font-size: 16px;
-                            font-weight: 700;
-                            color: #4caf50;
-                            vertical-alignment: center;
-                            width: 24px;
-                        }
-                        if FolderState.target-folder != "" && FolderState.project-name != "" && FolderState.folder-exists: Text {
-                            text: "✗";
-                            font-size: 16px;
-                            font-weight: 700;
-                            color: #f44336;
-                            vertical-alignment: center;
-                            width: 24px;
-                        }
-                    }
-                }
-
-                // Excel-Vorlage
-                VerticalLayout {
-                    spacing: 4px;
-                    Text {
-                        text: "Excel-Vorlage";
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                    }
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        LineEdit {
-                            text <=> FolderState.template-file;
-                            read-only: true;
-                            placeholder-text: "Bitte wählen...";
-                            horizontal-stretch: 1;
-                        }
-
-                        Button {
-                            text: "Durchsuchen...";
-                            clicked => {
-                                FolderState.select-template();
-                            }
-                        }
-                    }
-                }
-
-                // Ausgabeordner
-                VerticalLayout {
-                    spacing: 4px;
-                    Text {
-                        text: "Zielverzeichnis";
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                    }
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        LineEdit {
-                            text <=> FolderState.target-folder;
-                            read-only: true;
-                            placeholder-text: "Bitte wählen...";
-                            horizontal-stretch: 1;
-                        }
-
-                        Button {
-                            text: "Durchsuchen...";
-                            clicked => {
-                                FolderState.select-folder();
-                            }
-                        }
-                    }
-                }
-
-                // Aktionsleiste Einzelordner
-                HorizontalLayout {
-                    height: 40px;
-                    spacing: 12px;
-                    alignment: end;
-
-                    Button {
-                        text: "Zurücksetzen";
-                        enabled: FolderState.status-type != "pending";
-                        clicked => {
-                            FolderState.reset();
-                        }
-                    }
-
-                    Button {
-                        text: "Ordner erstellen";
-                        primary: true;
-                        enabled: FolderState.target-folder != "" && FolderState.template-file != "" && FolderState.project-name-valid && FolderState.status-type != "pending";
-                        clicked => {
-                            FolderState.create-folders();
-                        }
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            horizontal-stretch: 1;
-        }
-    }
-
-    // CSV-Import — eigene Card
-    HorizontalLayout {
-        alignment: start;
-        Card {
-            title: "CSV-Import";
-            width: 75%;
-            VerticalLayout {
-                spacing: 10px;
-
-                Text {
-                    text: "Erstellt für jede Projektnummer in der CSV-Datei automatisch die Ordnerstruktur.";
-                    font-size: 12px;
-                    color: Palette.foreground;
-                    opacity: 0.5;
-                    wrap: word-wrap;
-                }
-
-                // CSV-Datei
-                VerticalLayout {
-                    spacing: 4px;
-                    Text {
-                        text: "CSV-Datei";
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                    }
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        LineEdit {
-                            text <=> FolderState.csv-file;
-                            read-only: true;
-                            placeholder-text: "Bitte wählen...";
-                            horizontal-stretch: 1;
-                        }
-
-                        Button {
-                            text: "Durchsuchen...";
-                            clicked => {
-                                FolderState.select-csv-file();
-                            }
-                        }
-                    }
-                }
-
-                // Zielverzeichnis
-                VerticalLayout {
-                    spacing: 4px;
-                    Text {
-                        text: "Zielverzeichnis";
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                    }
-
-                    HorizontalLayout {
-                        spacing: 8px;
-                        LineEdit {
-                            text <=> FolderState.csv-target-folder;
-                            read-only: true;
-                            placeholder-text: "Bitte wählen...";
-                            horizontal-stretch: 1;
-                        }
-
-                        Button {
-                            text: "Durchsuchen...";
-                            clicked => {
-                                FolderState.select-csv-target();
-                            }
-                        }
-                    }
-                }
-
-                // Import-Button
-                HorizontalLayout {
-                    alignment: end;
-                    height: 40px;
-                    Button {
-                        text: "Importieren";
-                        primary: true;
-                        enabled: FolderState.csv-file != "" && FolderState.csv-target-folder != "" && FolderState.template-file != "" && FolderState.status-type != "pending";
-                        clicked => {
-                            FolderState.import-csv();
-                        }
-                    }
-                }
-            }
-        }
-
-        Rectangle {
-            horizontal-stretch: 1;
-        }
-    }
-
-    // Spacer
-    Rectangle {
+    // --- 2. SCROLLABLE CONTENT ---
+    ScrollView {
         vertical-stretch: 1;
+        viewport-height: folder-scroll-layout.min-height;
+
+        folder-scroll-layout := VerticalLayout {
+            spacing: 20px;
+            padding-right: 16px; // Platz für die Scrollbar
+
+            // --- SEKTION 1: EINZELNER ORDNER ---
+            HorizontalLayout {
+                alignment: start;
+                Card {
+                    title: "Einzelner Ordner";
+                    width: 75%;
+                    VerticalLayout {
+                        spacing: 15px;
+
+                        ProjectNameField {
+                            project-name <=> FolderState.project-name;
+                            skip-validation <=> FolderState.skip-validation;
+                            target-folder: FolderState.target-folder;
+                            folder-exists: FolderState.folder-exists;
+                            validated => { FolderState.validate-project-name(); }
+                        }
+
+                        PathInputField {
+                            label: "Excel-Vorlage";
+                            value <=> FolderState.template-file;
+                            clicked => { FolderState.select-template(); }
+                        }
+
+                        PathInputField {
+                            label: "Zielverzeichnis";
+                            value <=> FolderState.target-folder;
+                            clicked => { FolderState.select-folder(); }
+                        }
+
+                        // Footer Buttons innerhalb der Card
+                        HorizontalLayout {
+                            spacing: 12px;
+                            alignment: end;
+                            Button {
+                                text: "Zurücksetzen";
+                                clicked => { FolderState.reset(); }
+                            }
+                            Button {
+                                text: "Ordner erstellen";
+                                primary: true;
+                                enabled: FolderState.target-folder != "" && FolderState.template-file != "" && FolderState.project-name-valid && FolderState.status-type != "pending";
+                                clicked => { FolderState.create-folders(); }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // --- SEKTION 2: CSV-IMPORT ---
+            HorizontalLayout {
+                alignment: start;
+                Card {
+                    title: "CSV-Import";
+                    width: 75%;
+                    VerticalLayout {
+                        spacing: 15px;
+                        Text {
+                            text: "Erstellt für jede Projektnummer in der CSV-Datei automatisch die Ordnerstruktur.";
+                            font-size: 12px; opacity: 0.5; wrap: word-wrap;
+                        }
+
+                        PathInputField {
+                            label: "CSV-Datei";
+                            value <=> FolderState.csv-file;
+                            clicked => { FolderState.select-csv-file(); }
+                        }
+
+                        PathInputField {
+                            label: "Zielverzeichnis";
+                            value <=> FolderState.csv-target-folder;
+                            clicked => { FolderState.select-csv-target(); }
+                        }
+
+                        HorizontalLayout {
+                            alignment: end;
+                            Button {
+                                text: "Importieren";
+                                primary: true;
+                                enabled: FolderState.csv-file != "" && FolderState.csv-target-folder != "" && FolderState.template-file != "" && FolderState.status-type != "pending";
+                                clicked => { FolderState.import-csv(); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
