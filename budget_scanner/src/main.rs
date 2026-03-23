@@ -12,10 +12,7 @@ fn print_budget(data: &BudgetData) {
     println!("  Sprache:         {}", data.language);
     println!("  Lokalwährung:    {}", data.local_currency);
 
-    let c1 = data
-        .cost_col1
-        .map(|c| col_to_letter(c).to_string())
-        .unwrap_or("-".into());
+    let c1 = col_to_letter(data.cost_col1).to_string();
     let c2 = data
         .cost_col2
         .map(|c| col_to_letter(c).to_string())
@@ -36,10 +33,10 @@ fn print_budget(data: &BudgetData) {
 
     for pos in &data.positions {
         table.add_row(vec![
-            pos.number.clone(),
-            pos.label.clone(),
-            pos.cost_col1.clone(),
-            pos.cost_col2.clone(),
+            Cell::new(&pos.number),
+            Cell::new(&pos.label),
+            Cell::new(&pos.cost_col1),
+            Cell::new(&pos.cost_col2),
         ]);
     }
 

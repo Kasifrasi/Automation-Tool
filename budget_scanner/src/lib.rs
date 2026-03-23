@@ -65,7 +65,7 @@ pub struct BudgetData {
     pub project_number: String,
     pub language: String,
     pub local_currency: String,
-    pub cost_col1: Option<usize>,
+    pub cost_col1: usize,
     pub cost_col2: Option<usize>,
     pub eigenleistung: String,
     pub drittmittel: String,
@@ -88,8 +88,6 @@ pub struct ScanFailure {
     pub reason: ScanError,
 }
 
-// ScanFailure muss Send sein für rayon
-unsafe impl Send for ScanFailure {}
 
 #[derive(Debug, Error)]
 pub enum ScanError {
@@ -219,7 +217,7 @@ fn col_has_cost_term(range: &Range<Data>, col: usize) -> bool {
     })
 }
 
-fn find_cost_columns(range: &Range<Data>) -> (Option<usize>, Option<usize>) {
+fn find_cost_columns(range: &Range<Data>) -> Result<(usize, Option<usize>), ScanError> {
     let first_col = if col_has_cost_term(range, DEFAULT_COL1) {
         Some(DEFAULT_COL1)
     } else {
@@ -232,7 +230,7 @@ fn find_cost_columns(range: &Range<Data>) -> (Option<usize>, Option<usize>) {
     };
 
     if first_col.is_some() && second_col.is_some() {
-        return (first_col, second_col);
+        return Ok((DEFAULT_COL1, Some(DEFAULT_COL2)));
     }
 
     // Fallback: A1:Z100
@@ -257,12 +255,12 @@ fn find_cost_columns(range: &Range<Data>) -> (Option<usize>, Option<usize>) {
         }
     }
 
-    let resolved_first = first_col.or(found[0]);
+    let resolved_first = first_col.or(found[0]).ok_or(ScanError::CostColumnNotFound)?;
     let resolved_second = second_col.or_else(|| {
-        found[1].filter(|&col| resolved_first.is_none_or(|fc| col > fc))
+        found[1].filter(|&col| col > resolved_first)
     });
 
-    (resolved_first, resolved_second)
+    Ok((resolved_first, resolved_second))
 }
 
 /// Sucht in Spalte D nach exakt passendem Term und gibt den Wert aus value_col zurück.
@@ -313,17 +311,11 @@ fn scan_file_inner(path: &Path) -> Result<BudgetData, ScanError> {
         return Err(ScanError::InvalidVersion { found: version });
     }
 
-    let (col1, col2) = find_cost_columns(&range);
+    let (col1, col2) = find_cost_columns(&range)?;
 
-    let eigenleistung = col1
-        .map(|c| find_value_in_col_d(&range, EIGENLEISTUNG_TERMS, c))
-        .unwrap_or_default();
-    let drittmittel = col1
-        .map(|c| find_value_in_col_d(&range, DRITTMITTEL_TERMS, c))
-        .unwrap_or_default();
-    let kmw_mittel = col1
-        .map(|c| find_value_in_col_d(&range, KMW_TERMS, c))
-        .unwrap_or_default();
+    let eigenleistung = find_value_in_col_d(&range, EIGENLEISTUNG_TERMS, col1);
+    let drittmittel = find_value_in_col_d(&range, DRITTMITTEL_TERMS, col1);
+    let kmw_mittel = find_value_in_col_d(&range, KMW_TERMS, col1);
 
     // Positionen extrahieren
     let re = &*POSITION_RE;
@@ -385,8 +377,8 @@ fn scan_file_inner(path: &Path) -> Result<BudgetData, ScanError> {
                     .get(1)
                     .and_then(cell_text_owned)
                     .unwrap_or_default(),
-                cost_col1: col1
-                    .and_then(|c| row.get(c))
+                cost_col1: row
+                    .get(col1)
                     .and_then(cell_text_owned)
                     .unwrap_or_default(),
                 cost_col2: col2
