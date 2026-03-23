@@ -393,7 +393,7 @@ fn apply_b2f_defaults(ui: &MainWindow) {
     b2f.set_workbook_password("".into());
     b2f.set_hide_columns(true);
     b2f.set_hide_lang_sheet(true);
-    b2f.set_show_settings(false);
+    b2f.set_show_settings(true);
 
     b2f.set_sheet_permissions(SheetPermissions {
         select_locked: true,
@@ -966,6 +966,9 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 apply_b2f_defaults(&ui);
+                let b2f = ui.global::<BudgetState>();
+                b2f.set_table_data(slint::ModelRc::default());
+                b2f.set_table_columns(slint::ModelRc::default());
                 save_b2f_settings(&ui);
             }
         }

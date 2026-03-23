@@ -52,26 +52,18 @@ export component FBPage inherits VerticalLayout {
             vertical-stretch: 0;
             VerticalLayout {
                 spacing: 6px;
-                property <bool> all-checked: FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
+                property <bool> alle: FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                 HorizontalLayout {
                     spacing: 16px;
                     CheckBox {
                         text: "Alle";
-                        checked: all-checked;
+                        checked <=> alle;
                         toggled => {
-                            if self.checked {
-                                FBState.langs.de = true;
-                                FBState.langs.en = true;
-                                FBState.langs.fr = true;
-                                FBState.langs.es = true;
-                                FBState.langs.pt = true;
-                            } else {
-                                FBState.langs.de = false;
-                                FBState.langs.en = false;
-                                FBState.langs.fr = false;
-                                FBState.langs.es = false;
-                                FBState.langs.pt = false;
-                            }
+                            FBState.langs.de = self.checked;
+                            FBState.langs.en = self.checked;
+                            FBState.langs.fr = self.checked;
+                            FBState.langs.es = self.checked;
+                            FBState.langs.pt = self.checked;
                             FBState.save-settings();
                         }
                     }
@@ -80,6 +72,7 @@ export component FBPage inherits VerticalLayout {
                         text: "Deutsch";
                         checked <=> FBState.langs.de;
                         toggled => {
+                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
                         }
                     }
@@ -88,6 +81,7 @@ export component FBPage inherits VerticalLayout {
                         text: "English";
                         checked <=> FBState.langs.en;
                         toggled => {
+                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
                         }
                     }
@@ -96,6 +90,7 @@ export component FBPage inherits VerticalLayout {
                         text: "Français";
                         checked <=> FBState.langs.fr;
                         toggled => {
+                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
                         }
                     }
@@ -104,6 +99,7 @@ export component FBPage inherits VerticalLayout {
                         text: "Español";
                         checked <=> FBState.langs.es;
                         toggled => {
+                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
                         }
                     }
@@ -112,6 +108,7 @@ export component FBPage inherits VerticalLayout {
                         text: "Português";
                         checked <=> FBState.langs.pt;
                         toggled => {
+                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
                         }
                     }

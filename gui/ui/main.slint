@@ -4,13 +4,20 @@ import { FBPage } from "fb_page.slint";
 import { BudgetPage } from "budget_to_fb.slint";
 import { FolderPage } from "folder_page.slint";
 import { HomePage } from "home_page.slint";
-import { Languages, Categories, SheetPermissions, FBState, BudgetState, FolderState } from "state.slint";
+import {
+    Languages,
+    Categories,
+    SheetPermissions,
+    FBState,
+    BudgetState,
+    FolderState,
+} from "state.slint";
 export { Languages, Categories, SheetPermissions, FBState, BudgetState, FolderState }
 import "./fonts/InterVariable.ttf";
 import "./fonts/InterVariable-Italic.ttf";
 
 export component MainWindow inherits Window {
-    title: "Finanzberichts-Tool";
+    title: "Automation-Tool";
     default-font-family: "Inter Variable";
     default-font-size: 14px;
     preferred-width: 860px;
@@ -28,9 +35,12 @@ export component MainWindow inherits Window {
     callback toggle-dark-mode(bool);
 
     // Klick auf Hintergrund nimmt Fokus von Eingabefeldern
-    fs := FocusScope {}
+    fs := FocusScope { }
+
     TouchArea {
-        clicked => { fs.focus(); }
+        clicked => {
+            fs.focus();
+        }
     }
 
     VerticalLayout {
@@ -43,7 +53,7 @@ export component MainWindow inherits Window {
             HorizontalLayout {
                 spacing: 8px;
 
-                if root.current-page != "home" : VerticalLayout {
+                if root.current-page != "home": VerticalLayout {
                     spacing: 2px;
                     alignment: center;
                     Text {
@@ -52,29 +62,30 @@ export component MainWindow inherits Window {
                         font-weight: 700;
                         color: Palette.foreground;
                     }
+
                     Text {
-                        text: root.current-page == "fb"
-                            ? "Excel-Vorlagen erstellen"
-                            : (root.current-page == "budget"
-                                ? "Budget-Dateien scannen & FB-Berichte erstellen"
-                                : "Standardisierte Projektordner anlegen");
+                        text: root.current-page == "fb" ? "Excel-Vorlagen erstellen" : (root.current-page == "budget" ? "Budget-Dateien scannen & FB-Berichte erstellen" : "Standardisierte Projektordner anlegen");
                         font-size: 13px;
                         color: Palette.foreground;
                         opacity: 0.55;
                     }
                 }
 
-                Rectangle { horizontal-stretch: 1; }
+                Rectangle {
+                    horizontal-stretch: 1;
+                }
 
                 Switch {
                     text: root.dark-mode ? "Dark" : "Light";
                     checked <=> root.dark-mode;
-                    toggled => { root.toggle-dark-mode(root.dark-mode); }
+                    toggled => {
+                        root.toggle-dark-mode(root.dark-mode);
+                    }
                 }
             }
 
             // Ebene 2: Startmenü-Button absolut zentriert
-            if root.current-page != "home" : HorizontalLayout {
+            if root.current-page != "home": HorizontalLayout {
                 alignment: center;
                 vertical-stretch: 1;
                 Rectangle {
@@ -87,7 +98,9 @@ export component MainWindow inherits Window {
 
                     home-ta := TouchArea {
                         mouse-cursor: pointer;
-                        clicked => { root.current-page = "home"; }
+                        clicked => {
+                            root.current-page = "home";
+                        }
                     }
 
                     Image {
@@ -98,6 +111,7 @@ export component MainWindow inherits Window {
                         x: 10px;
                         y: (parent.height - self.height) / 2;
                     }
+
                     Text {
                         text: "Startmenü";
                         font-size: 13px;
@@ -114,24 +128,26 @@ export component MainWindow inherits Window {
         // ================================================================
         // Startmenü
         // ================================================================
-        if root.current-page == "home" : HomePage {
-            navigate(page) => { root.current-page = page; }
+        if root.current-page == "home": HomePage {
+            navigate(page) => {
+                root.current-page = page;
+            }
             vertical-stretch: 1;
         }
 
         // ================================================================
         // Seite 1: FB-Generator
         // ================================================================
-        if root.current-page == "fb" : FBPage {}
+        if root.current-page == "fb": FBPage { }
 
         // ================================================================
         // Seite 2: Budget zu FB
         // ================================================================
-        if root.current-page == "budget" : BudgetPage {}
+        if root.current-page == "budget": BudgetPage { }
 
         // ================================================================
         // Seite 3: Ordner erstellen
         // ================================================================
-        if root.current-page == "folder" : FolderPage {}
+        if root.current-page == "folder": FolderPage { }
     }
 }
