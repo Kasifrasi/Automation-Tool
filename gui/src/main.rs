@@ -415,10 +415,152 @@ fn apply_b2f_defaults(ui: &MainWindow) {
     });
 }
 
+// ==========================================
+// Folder-Creation Settings
+// ==========================================
+
+const SUBFOLDERS: &[&str] = &[
+    "0. Prüfungen",
+    "1. Vorprojektsaldo",
+    "2. Vertrag",
+    "3. Budget",
+    "4. Finanzberichte",
+    "5. Bankbelege",
+    "6. Mittelanforderungen",
+    "7. Narrative Berichte",
+    "Papierkorb",
+];
+
+#[derive(serde::Serialize, serde::Deserialize, Default)]
+struct FolderSettings {
+    target_folder: String,
+    template_file: String,
+}
+
+fn load_folder_settings(ui: &MainWindow) {
+    let s: FolderSettings = confy::load(APP_NAME, "folder").unwrap_or_default();
+    let fs = ui.global::<FolderState>();
+    if !s.target_folder.is_empty() {
+        fs.set_target_folder(s.target_folder.into());
+    }
+    if !s.template_file.is_empty() {
+        fs.set_template_file(s.template_file.into());
+    }
+}
+
+fn save_folder_settings(ui: &MainWindow) {
+    let fs = ui.global::<FolderState>();
+    let s = FolderSettings {
+        target_folder: fs.get_target_folder().to_string(),
+        template_file: fs.get_template_file().to_string(),
+    };
+    let _ = confy::store(APP_NAME, "folder", &s);
+}
+
+fn is_valid_project_number(name: &str) -> bool {
+    if name.len() != 13 {
+        return false;
+    }
+    let b = name.as_bytes();
+
+    // Numerisch: nnnn_nnnn_nnn
+    let numeric = b.iter().enumerate().all(|(i, &c)| match i {
+        4 | 9 => c == b'_',
+        _ => c.is_ascii_digit(),
+    });
+
+    // Alpha: b nn nnnn nnn
+    let alpha = b[0].is_ascii_alphabetic()
+        && b.iter().enumerate().skip(1).all(|(i, &c)| match i {
+            1 | 4 | 9 => c == b' ',
+            _ => c.is_ascii_digit(),
+        });
+
+    numeric || alpha
+}
+
+fn validate_project_name(ui: &MainWindow) {
+    let fs = ui.global::<FolderState>();
+    let raw = fs.get_project_name().to_string();
+    let skip = fs.get_skip_validation();
+
+    // Auto-Formatierung (nur wenn Validierung aktiv)
+    if !skip && !raw.is_empty() {
+        let chars: Vec<char> = raw.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
+
+        let formatted = if chars.is_empty() {
+            String::new()
+        } else if chars[0].is_ascii_alphabetic() {
+            // Alpha-Modus: b zz zzzz zzz (max 1 Buchstabe + 9 Ziffern)
+            let letter = chars[0];
+            let digits: Vec<char> = chars[1..]
+                .iter()
+                .filter(|c| c.is_ascii_digit())
+                .copied()
+                .take(9)
+                .collect();
+            let mut result = String::with_capacity(13);
+            result.push(letter);
+            if !digits.is_empty() || raw.len() > 1 {
+                result.push(' ');
+            }
+            for (i, d) in digits.iter().enumerate() {
+                if i == 2 || i == 6 {
+                    result.push(' ');
+                }
+                result.push(*d);
+            }
+            result
+        } else {
+            // Numerisch-Modus: zzzz_zzzz_zzz (max 11 Ziffern)
+            let digits: Vec<char> = chars
+                .iter()
+                .filter(|c| c.is_ascii_digit())
+                .copied()
+                .take(11)
+                .collect();
+            let mut result = String::with_capacity(13);
+            for (i, d) in digits.iter().enumerate() {
+                if i == 4 || i == 8 {
+                    result.push('_');
+                }
+                result.push(*d);
+            }
+            result
+        };
+
+        if formatted != raw {
+            fs.set_project_name(formatted.into());
+        }
+    }
+
+    // Validität prüfen
+    let name = fs.get_project_name().to_string();
+    let valid = if skip {
+        !name.is_empty()
+    } else {
+        is_valid_project_number(&name)
+    };
+    fs.set_project_name_valid(valid);
+
+    // Ordner-Existenz prüfen
+    let target = fs.get_target_folder().to_string();
+    if !target.is_empty() && !name.is_empty() {
+        let path = std::path::PathBuf::from(&target).join(&name);
+        fs.set_folder_exists(path.exists());
+    } else {
+        fs.set_folder_exists(false);
+    }
+}
+
 fn apply_folder_defaults(ui: &MainWindow) {
     let fs = ui.global::<FolderState>();
     fs.set_target_folder("".into());
+    fs.set_template_file("".into());
     fs.set_project_name("".into());
+    fs.set_skip_validation(false);
+    fs.set_folder_exists(false);
+    fs.set_project_name_valid(false);
     fs.set_status_type("idle".into());
     fs.set_status_message("".into());
 }
@@ -436,6 +578,7 @@ fn main() -> Result<(), slint::PlatformError> {
     apply_b2f_defaults(&ui);
     load_b2f_settings(&ui);
     apply_folder_defaults(&ui);
+    load_folder_settings(&ui);
 
     // Dark Mode: System-Einstellung erkennen
     let system_dark = matches!(dark_light::detect(), Ok(dark_light::Mode::Dark));
@@ -997,6 +1140,15 @@ fn main() -> Result<(), slint::PlatformError> {
     // Folder-Creation Callbacks
     // ==========================================
 
+    ui.global::<FolderState>().on_validate_project_name({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                validate_project_name(&ui);
+            }
+        }
+    });
+
     ui.global::<FolderState>().on_select_folder({
         let ui_handle = ui.as_weak();
         move || {
@@ -1004,6 +1156,24 @@ fn main() -> Result<(), slint::PlatformError> {
                 if let Some(path) = rfd::FileDialog::new().pick_folder() {
                     ui.global::<FolderState>()
                         .set_target_folder(path.to_string_lossy().to_string().into());
+                    save_folder_settings(&ui);
+                    validate_project_name(&ui);
+                }
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_select_template({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("Excel", &["xlsm", "xlsx"])
+                    .pick_file()
+                {
+                    ui.global::<FolderState>()
+                        .set_template_file(path.to_string_lossy().to_string().into());
+                    save_folder_settings(&ui);
                 }
             }
         }
@@ -1014,6 +1184,7 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 apply_folder_defaults(&ui);
+                save_folder_settings(&ui);
             }
         }
     });
@@ -1034,21 +1205,81 @@ fn main() -> Result<(), slint::PlatformError> {
         move || {
             if let Some(ui) = ui_handle.upgrade() {
                 let fs = ui.global::<FolderState>();
-                if fs.get_target_folder().is_empty() {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message("Bitte Ausgabeordner wählen.".into());
-                    return;
-                }
-                if fs.get_project_name().is_empty() {
+                let project_name = fs.get_project_name().to_string();
+                let target = std::path::PathBuf::from(fs.get_target_folder().to_string());
+                let template = std::path::PathBuf::from(fs.get_template_file().to_string());
+
+                // Validierung Projektname
+                let invalid_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*'];
+                if project_name.is_empty() {
                     fs.set_status_type("error".into());
                     fs.set_status_message("Bitte Projektnamen angeben.".into());
                     return;
                 }
+                if project_name.ends_with(' ') || project_name.ends_with('.') {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message("Projektname darf nicht mit Leerzeichen oder Punkt enden.".into());
+                    return;
+                }
+                if project_name.chars().any(|c| invalid_chars.contains(&c)) {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message(format!("Ungültige Zeichen im Projektnamen: {}", invalid_chars.iter().collect::<String>()).into());
+                    return;
+                }
 
-                fs.set_status_type("success".into());
-                fs.set_status_message(
-                    "Ordnerstruktur-Erstellung noch nicht implementiert.".into(),
+                // Zielordner prüfen
+                if !target.exists() {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message("Zielverzeichnis existiert nicht.".into());
+                    return;
+                }
+
+                // Excel-Vorlage prüfen
+                if !template.exists() {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message("Excel-Vorlage nicht gefunden.".into());
+                    return;
+                }
+
+                let project_root = target.join(&project_name);
+                if project_root.exists() {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message(format!("Projektordner existiert bereits: {}", project_root.display()).into());
+                    return;
+                }
+
+                // Ordner erstellen
+                if let Err(e) = std::fs::create_dir(&project_root) {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message(format!("Fehler beim Erstellen: {e}").into());
+                    return;
+                }
+                for sub in SUBFOLDERS {
+                    if let Err(e) = std::fs::create_dir(project_root.join(sub)) {
+                        fs.set_status_type("error".into());
+                        fs.set_status_message(format!("Fehler beim Erstellen von '{sub}': {e}").into());
+                        return;
+                    }
+                }
+
+                // Template kopieren
+                let ext = template.extension().and_then(|e| e.to_str()).unwrap_or("xlsm");
+                let dest = project_root.join(format!("Pruefung_{project_name}.{ext}"));
+                if let Err(e) = std::fs::copy(&template, &dest) {
+                    fs.set_status_type("error".into());
+                    fs.set_status_message(format!("Fehler beim Kopieren der Vorlage: {e}").into());
+                    return;
+                }
+
+                // .root.txt erstellen
+                let _ = std::fs::write(
+                    project_root.join(".root.txt"),
+                    "Ordner automatisch generiert.",
                 );
+
+                fs.set_project_name("".into());
+                fs.set_status_type("success".into());
+                fs.set_status_message(format!("Projektordner erstellt: {}", project_root.display()).into());
             }
         }
     });

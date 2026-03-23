@@ -1,4 +1,4 @@
-import { Button, LineEdit, Palette } from "std-widgets.slint";
+import { Button, CheckBox, LineEdit, Palette } from "std-widgets.slint";
 import { Card, StatusBanner } from "components.slint";
 import { FolderState } from "state.slint";
 
@@ -13,62 +13,166 @@ export component FolderPage inherits VerticalLayout {
         dismiss => { FolderState.dismiss-status(); }
     }
 
-    Card {
-        title: "Ordnerstruktur erstellen";
-        VerticalLayout {
-            spacing: 15px;
-
-            // Projektname
+    // Card auf 75% Breite begrenzen
+    HorizontalLayout {
+        Card {
+            title: "Ordnerstruktur erstellen";
+            horizontal-stretch: 3; // 75%
+            max-height: 340px;
             VerticalLayout {
-                spacing: 4px;
-                Text {
-                    text: "Projektbezeichnung";
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: Palette.foreground;
-                    opacity: 0.8;
-                }
-                LineEdit {
-                    text <=> FolderState.project-name;
-                    placeholder-text: "z.B. P123_Musterprojekt";
-                }
-            }
+                spacing: 15px;
 
-            // Ausgabeordner
-            VerticalLayout {
-                spacing: 4px;
-                Text {
-                    text: "Zielverzeichnis";
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: Palette.foreground;
-                    opacity: 0.8;
-                }
-                HorizontalLayout {
-                    spacing: 8px;
-                    LineEdit {
-                        text <=> FolderState.target-folder;
-                        read-only: true;
-                        placeholder-text: "Bitte wählen...";
-                        horizontal-stretch: 1;
+                // Projektname
+                VerticalLayout {
+                    spacing: 4px;
+
+                    // Zeile 1: Titel + Checkbox
+                    HorizontalLayout {
+                        spacing: 8px;
+                        Text {
+                            text: "Projektbezeichnung";
+                            font-size: 13px;
+                            font-weight: 600;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            horizontal-stretch: 1;
+                        }
+                        CheckBox {
+                            text: "Freie Eingabe";
+                            checked <=> FolderState.skip-validation;
+                            toggled => {
+                                FolderState.validate-project-name();
+                            }
+                        }
                     }
-                    Button {
-                        text: "Durchsuchen...";
-                        clicked => { FolderState.select-folder(); }
+
+                    // Zeile 2: LineEdit + Existenz-Indikator
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit {
+                            text <=> FolderState.project-name;
+                            placeholder-text: "z.B. 2025_0004_003";
+                            horizontal-stretch: 1;
+                            edited => {
+                                FolderState.validate-project-name();
+                                self.set-selection-offsets(999, 999);
+                            }
+                        }
+
+                        // Existenz-Indikator
+                        if FolderState.target-folder == "" : TouchArea {
+                            width: 24px;
+                            height: 24px;
+                            property <bool> show-tooltip: self.has-hover;
+                            Text {
+                                text: "?";
+                                font-size: 16px;
+                                font-weight: 700;
+                                color: Palette.foreground;
+                                opacity: 0.4;
+                                vertical-alignment: center;
+                                horizontal-alignment: center;
+                            }
+                            if show-tooltip : Rectangle {
+                                x: -140px;
+                                y: parent.height;
+                                width: 160px;
+                                height: 28px;
+                                background: Palette.background;
+                                border-color: Palette.border;
+                                border-width: 1px;
+                                border-radius: 4px;
+                                Text {
+                                    text: "Zielordner setzen";
+                                    font-size: 11px;
+                                    color: Palette.foreground;
+                                    horizontal-alignment: center;
+                                    vertical-alignment: center;
+                                }
+                            }
+                        }
+                        if FolderState.target-folder != "" && FolderState.project-name != "" && !FolderState.folder-exists : Text {
+                            text: "✓";
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #4caf50;
+                            vertical-alignment: center;
+                            width: 24px;
+                        }
+                        if FolderState.target-folder != "" && FolderState.project-name != "" && FolderState.folder-exists : Text {
+                            text: "✗";
+                            font-size: 16px;
+                            font-weight: 700;
+                            color: #f44336;
+                            vertical-alignment: center;
+                            width: 24px;
+                        }
                     }
                 }
-            }
 
-            Rectangle { height: 10px; }
+                // Excel-Vorlage
+                VerticalLayout {
+                    spacing: 4px;
+                    Text {
+                        text: "Excel-Vorlage";
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: Palette.foreground;
+                        opacity: 0.8;
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit {
+                            text <=> FolderState.template-file;
+                            read-only: true;
+                            placeholder-text: "Bitte wählen...";
+                            horizontal-stretch: 1;
+                        }
+                        Button {
+                            text: "Durchsuchen...";
+                            clicked => { FolderState.select-template(); }
+                        }
+                    }
+                }
 
-            Text {
-                text: "Hinweis: Es wird eine standardisierte Ordnerstruktur inklusive der notwendigen Prüfvorlagen im gewählten Verzeichnis erstellt.";
-                font-size: 12px;
-                color: Palette.foreground;
-                opacity: 0.5;
-                wrap: word-wrap;
+                // Ausgabeordner
+                VerticalLayout {
+                    spacing: 4px;
+                    Text {
+                        text: "Zielverzeichnis";
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: Palette.foreground;
+                        opacity: 0.8;
+                    }
+                    HorizontalLayout {
+                        spacing: 8px;
+                        LineEdit {
+                            text <=> FolderState.target-folder;
+                            read-only: true;
+                            placeholder-text: "Bitte wählen...";
+                            horizontal-stretch: 1;
+                        }
+                        Button {
+                            text: "Durchsuchen...";
+                            clicked => { FolderState.select-folder(); }
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Hinweis: Es wird eine standardisierte Ordnerstruktur inklusive der notwendigen Prüfvorlagen im gewählten Verzeichnis erstellt.";
+                    font-size: 12px;
+                    color: Palette.foreground;
+                    opacity: 0.5;
+                    wrap: word-wrap;
+                }
             }
         }
+
+        // 25% Spacer rechts
+        Rectangle { horizontal-stretch: 1; }
     }
 
     // Spacer um Buttons nach unten zu schieben
@@ -88,7 +192,7 @@ export component FolderPage inherits VerticalLayout {
         Button {
             text: FolderState.status-type == "pending" ? "Wird erstellt..." : "Ordner erstellen";
             primary: true;
-            enabled: FolderState.target-folder != "" && FolderState.project-name != "" && FolderState.status-type != "pending";
+            enabled: FolderState.target-folder != "" && FolderState.template-file != "" && FolderState.project-name-valid && FolderState.status-type != "pending";
             clicked => { FolderState.create-folders(); }
             width: 200px;
         }

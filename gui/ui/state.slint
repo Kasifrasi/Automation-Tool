@@ -112,12 +112,19 @@ export global BudgetState {
 // ========================================
 export global FolderState {
     in-out property <string> target-folder;
+    in-out property <string> template-file;
     in-out property <string> project-name;
+
+    in-out property <bool> skip-validation: false;
+    in-out property <bool> folder-exists: false;
+    in-out property <bool> project-name-valid: false;
 
     in-out property <string> status-type: "idle";
     in-out property <string> status-message: "";
 
     callback select-folder();
+    callback select-template();
+    callback validate-project-name();
     callback create-folders();
     callback reset();
     callback dismiss-status();
