@@ -8,6 +8,7 @@ import {
     Languages,
     Categories,
     SheetPermissions,
+    GlobalUI,
     FBState,
     BudgetState,
     FolderState,
@@ -17,6 +18,13 @@ import "./fonts/InterVariable.ttf";
 import "./fonts/InterVariable-Italic.ttf";
 
 export component MainWindow inherits Window {
+    init => {
+            GlobalUI.window-height = self.height;
+            GlobalUI.window-width = self.width;
+    }    
+    changed height => { GlobalUI.window-height = self.height; }
+    changed width => { GlobalUI.window-width = self.width; }
+    
     title: "Automation-Tool";
     default-font-family: "Inter Variable";
     default-font-size: 14px;

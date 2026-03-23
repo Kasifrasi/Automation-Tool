@@ -23,3 +23,7 @@ slint = { workspace = true, features = ["backend-winit", "renderer-winit-softwar
 
 [build-dependencies]
 slint-build = { workspace = true }
+
+[features]
+# Dieses Feature aktiviert die Live-Preview bei Slint
+dev-ui = ["slint/live-preview"]

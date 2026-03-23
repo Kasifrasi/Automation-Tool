@@ -6,10 +6,10 @@ import {
     Palette,
 } from "std-widgets.slint";
 import { Card, StatusBanner, CategorySpinBox } from "components.slint";
-import { FBState } from "state.slint";
+import { GlobalUI, FBState } from "state.slint";
 
 export component FBPage inherits VerticalLayout {
-    spacing: 4px;
+    spacing: GlobalUI.spacing;
     vertical-stretch: 1;
 
     property <int> total-positions: FBState.categories.cat1 + FBState.categories.cat2 + FBState.categories.cat3 + FBState.categories.cat4 + FBState.categories.cat5 + FBState.categories.cat6 + FBState.categories.cat7 + FBState.categories.cat8;

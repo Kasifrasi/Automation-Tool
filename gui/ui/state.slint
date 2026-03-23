@@ -43,6 +43,24 @@ export struct SheetPermissions {
 }
 
 // ========================================
+// Global UI Metrics (Zentrale Steuerung)
+// ========================================
+export global GlobalUI {
+    in-out property <length> window-height;
+    in-out property <length> window-width;
+
+    // Dynamisches Spacing: 
+    out property <length> spacing: Math.max(2px, Math.min(8px, self.window-height * 0.008));
+    
+    // Dynamisches Padding:
+    out property <length> padding: Math.max(4px, Math.min(16px, self.window-width * 0.015));
+
+    // "Kompakt-Modus" Flag: Kannst du nutzen, um Texte zu verkleinern oder 
+    // weniger wichtige Elemente komplett auszublenden.
+    out property <bool> is-compact: self.window-height < 500px;
+}
+
+// ========================================
 // FB-Generator State
 // ========================================
 export global FBState {

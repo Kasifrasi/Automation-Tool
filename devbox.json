@@ -46,6 +46,7 @@
       "echo '🦀 Rust Dev Workspace | 🛡️ prek Hooks geladen via Devbox'"
     ],
     "scripts": {
+      "dev": "SLINT_LIVE_PREVIEW=1 cargo run -p gui --features dev-ui",
       "test": "cargo nextest run",
       "lint": "cargo clippy",
       "fmt": "cargo fmt"
