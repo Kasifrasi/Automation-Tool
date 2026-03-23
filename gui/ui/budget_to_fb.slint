@@ -5,6 +5,7 @@ import {
     GridBox,
     Palette,
     StandardTableView,
+    ScrollView,
 } from "std-widgets.slint";
 import { Card, StatusBanner, SettingCheckBox, PasswordField } from "components.slint";
 import { BudgetState } from "state.slint";
@@ -44,6 +45,7 @@ export component BudgetPage inherits VerticalLayout {
             HorizontalLayout {
                 horizontal-stretch: 1;
                 spacing: 8px;
+                padding-right: 12px;
                 LineEdit {
                     text <=> BudgetState.out-folder;
                     read-only: true;
@@ -60,9 +62,8 @@ export component BudgetPage inherits VerticalLayout {
 
     // --- 2. SCROLLABLE CONTENT (Settings & Tabelle) ---
     // Dieses Element saugt den restlichen Platz auf und hält den Footer unten.
-    Flickable {
+    ScrollView {
         vertical-stretch: 1;
-        viewport-height: scroll-layout.min-height;
 
         scroll-layout := VerticalLayout {
             spacing: 12px;
