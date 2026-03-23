@@ -3,9 +3,8 @@ import {
     CheckBox,
     LineEdit,
     GridBox,
-    Palette,
 } from "std-widgets.slint";
-import { Card, StatusBanner, CategorySpinBox } from "components.slint";
+import { Card, StatusBanner, CategorySpinBox, CategoryField, SettingCheckBox, PasswordField  } from "components.slint";
 import { GlobalUI, FBState } from "state.slint";
 
 export component FBPage inherits VerticalLayout {
@@ -50,10 +49,10 @@ export component FBPage inherits VerticalLayout {
         Card {
             title: "Zielsprachen";
             vertical-stretch: 0;
-            VerticalLayout {
+            VerticalLayout {                    
                 spacing: 6px;
                 property <bool> alle: FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
-                HorizontalLayout {
+                HorizontalLayout {                               
                     spacing: 16px;
                     CheckBox {
                         text: "Alle";
@@ -68,49 +67,16 @@ export component FBPage inherits VerticalLayout {
                         }
                     }
 
-                    CheckBox {
-                        text: "Deutsch";
-                        checked <=> FBState.langs.de;
-                        toggled => {
+                    CheckBox { text: "Deutsch"; checked <=> FBState.langs.de; toggled => { update_langs() } }
+                    CheckBox { text: "English"; checked <=> FBState.langs.en; toggled => { update_langs() } }
+                    CheckBox { text: "Français"; checked <=> FBState.langs.fr; toggled => { update_langs() } }
+                    CheckBox { text: "Español"; checked <=> FBState.langs.es; toggled => { update_langs() } }
+                    CheckBox { text: "Português"; checked <=> FBState.langs.pt; toggled => { update_langs() } }
+                    
+                    // Alle Sprachen gleichzeitig aktivieren/deaktivieren
+                    function update_langs() {
                             alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                             FBState.save-settings();
-                        }
-                    }
-
-                    CheckBox {
-                        text: "English";
-                        checked <=> FBState.langs.en;
-                        toggled => {
-                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
-                            FBState.save-settings();
-                        }
-                    }
-
-                    CheckBox {
-                        text: "Français";
-                        checked <=> FBState.langs.fr;
-                        toggled => {
-                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
-                            FBState.save-settings();
-                        }
-                    }
-
-                    CheckBox {
-                        text: "Español";
-                        checked <=> FBState.langs.es;
-                        toggled => {
-                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
-                            FBState.save-settings();
-                        }
-                    }
-
-                    CheckBox {
-                        text: "Português";
-                        checked <=> FBState.langs.pt;
-                        toggled => {
-                            alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
-                            FBState.save-settings();
-                        }
                     }
                 }
             }
@@ -121,182 +87,28 @@ export component FBPage inherits VerticalLayout {
             title: "Kategorien & Positionen";
             subtitle: "Gesamt: " + root.total-positions;
             vertical-stretch: 0;
+        
             HorizontalLayout {
                 spacing: 8px;
+        
+                // Linke Spalte
                 GridBox {
                     horizontal-stretch: 1;
                     spacing: 2px;
-                    Row {
-                        Text {
-                            text: "1. Bauausgaben";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat1;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "2. Investitionen";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat2;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "3. Personalkosten";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat3;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "4. Projektaktivitäten";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat4;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
+                    Row { CategoryField { label: "1. Bauausgaben"; val <=> FBState.categories.cat1; } }
+                    Row { CategoryField { label: "2. Investitionen"; val <=> FBState.categories.cat2; } }
+                    Row { CategoryField { label: "3. Personalkosten"; val <=> FBState.categories.cat3; } }
+                    Row { CategoryField { label: "4. Projektaktivitäten"; val <=> FBState.categories.cat4; } }
                 }
-
+        
+                // Rechte Spalte
                 GridBox {
                     horizontal-stretch: 1;
                     spacing: 2px;
-                    Row {
-                        Text {
-                            text: "5. Projektverwaltung";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat5;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "6. Evaluierung";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat6;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "7. Audit";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat7;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
-
-                    Row {
-                        Text {
-                            text: "8. Reserve";
-                            font-size: 13px;
-                            color: Palette.foreground;
-                            opacity: 0.8;
-                            vertical-alignment: center;
-                            overflow: elide;
-                        }
-
-                        CategorySpinBox {
-                            value <=> FBState.categories.cat8;
-                            minimum: 0;
-                            col: 1;
-                            max-width: 120px;
-                            changed => {
-                                FBState.save-settings();
-                            }
-                        }
-                    }
+                    Row { CategoryField { label: "5. Projektverwaltung"; val <=> FBState.categories.cat5; } }
+                    Row { CategoryField { label: "6. Evaluierung"; val <=> FBState.categories.cat6; } }
+                    Row { CategoryField { label: "7. Audit"; val <=> FBState.categories.cat7; } }
+                    Row { CategoryField { label: "8. Reserve"; val <=> FBState.categories.cat8; } }
                 }
             }
         }
@@ -305,333 +117,94 @@ export component FBPage inherits VerticalLayout {
         Card {
             title: "Erweiterte Einstellungen";
             vertical-stretch: 1;
-            min-height: 0px;
             clip: true;
-
+        
             VerticalLayout {
                 visible: FBState.show-settings;
-                spacing: 4px;
-
-                // Version
+                spacing: 12px; // Etwas mehr Luft zwischen den Sektionen
+        
+                // --- Sektion: Version ---
                 VerticalLayout {
-                    spacing: 8px;
-                    Text {
-                        text: "Version";
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                    }
-
+                    spacing: 4px;
+                    Text { text: "Version"; font-size: 13px; font-weight: 600; opacity: 0.8; }
                     LineEdit {
                         text <=> FBState.version;
                         placeholder-text: "z.B. v2025-1";
                         width: 160px;
-                        edited => {
-                            FBState.save-settings();
-                        }
+                        edited => { FBState.save-settings(); }
                     }
                 }
-
-                Rectangle {
-                    height: 1px;
-                    background: Palette.border;
-                    opacity: 0.3;
-                }
-
-                // Zusammengefasste GridBox für Sichtbarkeit und Sicherheit
+        
+                // --- Sektion: Sichtbarkeit & Schutz ---
                 GridBox {
-                    padding-left: 7px;
                     spacing: 10px;
-
-                    // Zeile 1: Sichtbarkeit
                     Row {
-                        CheckBox {
-                            text: "Spalten Q:V ausblenden";
-                            checked <=> FBState.hide-columns;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Sprachblatt ausblenden";
-                            checked <=> FBState.hide-lang-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Spalten Q:V ausblenden"; value <=> FBState.hide-columns; }
+                        SettingCheckBox { text: "Sprachblatt ausblenden"; value <=> FBState.hide-lang-sheet; }
                     }
-
-                    // Zeile 2: Trennlinie (spannt über beide Spalten)
                     Row {
-                        Rectangle {
-                            colspan: 2;
-                            height: 1px;
-                            background: Palette.border;
-                            opacity: 0.3;
-                        }
-                    }
-
-                    // Zeile 3: Excel-Sicherheit
-                    Row {
-                        CheckBox {
-                            text: "Blattschutz";
-                            checked <=> FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Mappenschutz";
-                            checked <=> FBState.protect-workbook;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Blattschutz"; value <=> FBState.protect-sheet; }
+                        SettingCheckBox { text: "Mappenschutz"; value <=> FBState.protect-workbook; }
                     }
                 }
-
+        
+                // --- Sektion: Passwörter ---
                 HorizontalLayout {
                     spacing: 8px;
-                    Rectangle {
-                        background: Palette.background;
-                        border-radius: 6px;
-                        border-width: 1px;
-                        border-color: Palette.border;
-                        horizontal-stretch: 1;
-                        opacity: FBState.protect-sheet ? 1.0 : 0.5;
-                        VerticalLayout {
-                            padding: 10px;
-                            spacing: 3px;
-                            Text {
-                                text: "Blatt-Passwort";
-                                font-size: 13px;
-                                font-weight: 600;
-                                color: Palette.foreground;
-                                opacity: 0.7;
-                            }
-
-                            LineEdit {
-                                input-type: InputType.password;
-                                placeholder-text: "Standard: thetool";
-                                text <=> FBState.sheet-password;
-                                enabled: FBState.protect-sheet;
-                                edited => {
-                                    FBState.save-settings();
-                                }
-                            }
-                        }
+                    PasswordField { 
+                        label: "Blatt-Passwort"; 
+                        password <=> FBState.sheet-password; 
+                        is-enabled: FBState.protect-sheet;
+                        placeholder: "Standard: thetool";
                     }
-
-                    Rectangle {
-                        background: Palette.background;
-                        border-radius: 6px;
-                        border-width: 1px;
-                        border-color: Palette.border;
-                        horizontal-stretch: 1;
-                        opacity: FBState.protect-workbook ? 1.0 : 0.5;
-                        VerticalLayout {
-                            padding: 10px;
-                            spacing: 3px;
-                            Text {
-                                text: "Mappen-Passwort";
-                                font-size: 13px;
-                                font-weight: 600;
-                                color: Palette.foreground;
-                                opacity: 0.7;
-                            }
-
-                            LineEdit {
-                                input-type: InputType.password;
-                                placeholder-text: "Standard: thetool";
-                                text <=> FBState.workbook-password;
-                                enabled: FBState.protect-workbook;
-                                edited => {
-                                    FBState.save-settings();
-                                }
-                            }
-                        }
+                    PasswordField { 
+                        label: "Mappen-Passwort"; 
+                        password <=> FBState.workbook-password; 
+                        is-enabled: FBState.protect-workbook;
+                        placeholder: "Standard: thetool";
                     }
                 }
-
-                Rectangle {
-                    height: 1px;
-                    background: Palette.border;
-                    opacity: 0.3;
-                }
-
-                // Blattschutz-Berechtigungen
+        
+                // --- Sektion: Berechtigungen ---
                 Text {
                     text: "Erlaubte Aktionen bei Blattschutz";
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: Palette.foreground;
+                    font-size: 13px; font-weight: 600;
                     opacity: FBState.protect-sheet ? 0.6 : 0.3;
                 }
-
+        
                 GridBox {
                     spacing: 2px;
                     Row {
-                        CheckBox {
-                            text: "Gesperrte Zellen wählen";
-                            checked <=> FBState.sheet-permissions.select-locked;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Spalten löschen";
-                            checked <=> FBState.sheet-permissions.delete-columns;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Gesperrte Zellen wählen"; value <=> FBState.sheet-permissions.select-locked; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Spalten löschen"; value <=> FBState.sheet-permissions.delete-columns; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Freie Zellen wählen";
-                            checked <=> FBState.sheet-permissions.select-unlocked;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Zeilen löschen";
-                            checked <=> FBState.sheet-permissions.delete-rows;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Freie Zellen wählen"; value <=> FBState.sheet-permissions.select-unlocked; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Zeilen löschen"; value <=> FBState.sheet-permissions.delete-rows; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Zellen formatieren";
-                            checked <=> FBState.sheet-permissions.format-cells;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Sortieren";
-                            checked <=> FBState.sheet-permissions.sort;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Zellen formatieren"; value <=> FBState.sheet-permissions.format-cells; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Sortieren"; value <=> FBState.sheet-permissions.sort; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Spalten formatieren";
-                            checked <=> FBState.sheet-permissions.format-columns;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Autofilter";
-                            checked <=> FBState.sheet-permissions.autofilter;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Spalten formatieren"; value <=> FBState.sheet-permissions.format-columns; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Autofilter"; value <=> FBState.sheet-permissions.autofilter; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Zeilen formatieren";
-                            checked <=> FBState.sheet-permissions.format-rows;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Pivot-Tabellen";
-                            checked <=> FBState.sheet-permissions.pivot-tables;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Zeilen formatieren"; value <=> FBState.sheet-permissions.format-rows; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Pivot-Tabellen"; value <=> FBState.sheet-permissions.pivot-tables; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Spalten einfügen";
-                            checked <=> FBState.sheet-permissions.insert-columns;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Objekte bearbeiten";
-                            checked <=> FBState.sheet-permissions.edit-objects;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Spalten einfügen"; value <=> FBState.sheet-permissions.insert-columns; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Objekte bearbeiten"; value <=> FBState.sheet-permissions.edit-objects; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Zeilen einfügen";
-                            checked <=> FBState.sheet-permissions.insert-rows;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Szenarien";
-                            checked <=> FBState.sheet-permissions.edit-scenarios;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Zeilen einfügen"; value <=> FBState.sheet-permissions.insert-rows; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Szenarien"; value <=> FBState.sheet-permissions.edit-scenarios; is-enabled: FBState.protect-sheet; }
                     }
-
                     Row {
-                        CheckBox {
-                            text: "Links einfügen";
-                            checked <=> FBState.sheet-permissions.insert-hyperlinks;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
-
-                        CheckBox {
-                            text: "Inhalte schützen";
-                            checked <=> FBState.sheet-permissions.contents;
-                            enabled: FBState.protect-sheet;
-                            toggled => {
-                                FBState.save-settings();
-                            }
-                        }
+                        SettingCheckBox { text: "Links einfügen"; value <=> FBState.sheet-permissions.insert-hyperlinks; is-enabled: FBState.protect-sheet; }
+                        SettingCheckBox { text: "Inhalte schützen"; value <=> FBState.sheet-permissions.contents; is-enabled: FBState.protect-sheet; }
                     }
                 }
             }
