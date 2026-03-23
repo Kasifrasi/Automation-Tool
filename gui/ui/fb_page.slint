@@ -124,168 +124,180 @@ export component FBPage inherits VerticalLayout {
             title: "Kategorien & Positionen";
             subtitle: "Gesamt: " + root.total-positions;
             vertical-stretch: 0;
-            GridBox {
-                spacing: 2px;
-                Row {
-                    Text {
-                        text: "1. Bauausgaben";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                    }
+            HorizontalLayout {
+                spacing: 8px;
+                GridBox {
+                    horizontal-stretch: 1;
+                    spacing: 2px;
+                    Row {
+                        Text {
+                            text: "1. Bauausgaben";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
 
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat1;
-                        minimum: 0;
-                        col: 1;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat1;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
 
-                    Text {
-                        text: "5. Projektverwaltung";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                        col: 2;
-                    }
-
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat5;
-                        minimum: 0;
-                        col: 3;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                    Row {
+                        Text {
+                            text: "2. Investitionen";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
                         }
-                    }
-                }
 
-                Row {
-                    Text {
-                        text: "2. Investitionen";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                    }
-
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat2;
-                        minimum: 0;
-                        col: 1;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat2;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
 
-                    Text {
-                        text: "6. Evaluierung";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                        col: 2;
-                    }
-
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat6;
-                        minimum: 0;
-                        col: 3;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                    Row {
+                        Text {
+                            text: "3. Personalkosten";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
                         }
-                    }
-                }
 
-                Row {
-                    Text {
-                        text: "3. Personalkosten";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                    }
-
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat3;
-                        minimum: 0;
-                        col: 1;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat3;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
 
-                    Text {
-                        text: "7. Audit";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                        col: 2;
-                    }
+                    Row {
+                        Text {
+                            text: "4. Projektaktivitäten";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
 
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat7;
-                        minimum: 0;
-                        col: 3;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat4;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
                 }
 
-                Row {
-                    Text {
-                        text: "4. Projektaktivitäten";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                    }
+                GridBox {
+                    horizontal-stretch: 1;
+                    spacing: 2px;
+                    Row {
+                        Text {
+                            text: "5. Projektverwaltung";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
 
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat4;
-                        minimum: 0;
-                        col: 1;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat5;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
 
-                    Text {
-                        text: "8. Reserve";
-                        font-size: 13px;
-                        color: Palette.foreground;
-                        opacity: 0.8;
-                        vertical-alignment: center;
-                        overflow: elide;
-                        col: 2;
+                    Row {
+                        Text {
+                            text: "6. Evaluierung";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
+
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat6;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
+                        }
                     }
 
-                    CategorySpinBox {
-                        value <=> FBState.categories.cat8;
-                        minimum: 0;
-                        col: 3;
-                        max-width: 120px;
-                        changed => {
-                            FBState.save-settings();
+                    Row {
+                        Text {
+                            text: "7. Audit";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
+
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat7;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
+                        }
+                    }
+
+                    Row {
+                        Text {
+                            text: "8. Reserve";
+                            font-size: 13px;
+                            color: Palette.foreground;
+                            opacity: 0.8;
+                            vertical-alignment: center;
+                            overflow: elide;
+                        }
+
+                        CategorySpinBox {
+                            value <=> FBState.categories.cat8;
+                            minimum: 0;
+                            col: 1;
+                            max-width: 120px;
+                            changed => {
+                                FBState.save-settings();
+                            }
                         }
                     }
                 }
