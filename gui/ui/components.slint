@@ -232,24 +232,24 @@ export component CategoryField inherits HorizontalLayout {
     }
 }
 
-// Eine CheckBox, die automatisch beim Umschalten speichert
 export component SettingCheckBox inherits CheckBox {
     in-out property <bool> value;
     in property <bool> is-enabled: true;
-    
+    callback changed(); // NEU: Ein generischer Funkspruch
+
     checked <=> root.value;
     enabled: root.is-enabled;
-    toggled => {
-        FBState.save-settings();
+    toggled => { 
+        root.changed(); // Sag der Seite bescheid
     }
 }
 
-// Die Passwort-Box (Blatt & Mappe)
 export component PasswordField inherits Rectangle {
     in property <string> label;
     in property <string> placeholder;
     in-out property <string> password;
     in property <bool> is-enabled: true;
+    callback changed(); // NEU
 
     background: Palette.background;
     border-radius: 6px;
@@ -261,19 +261,13 @@ export component PasswordField inherits Rectangle {
     VerticalLayout {
         padding: 10px;
         spacing: 3px;
-        Text {
-            text: root.label;
-            font-size: 13px;
-            font-weight: 600;
-            color: Palette.foreground;
-            opacity: 0.7;
-        }
+        Text { text: root.label; font-size: 13px; font-weight: 600; color: Palette.foreground; opacity: 0.7; }
         LineEdit {
             input-type: InputType.password;
             placeholder-text: root.placeholder;
             text <=> root.password;
             enabled: root.is-enabled;
-            edited => { FBState.save-settings(); }
+            edited => { root.changed(); } // Sag der Seite bescheid
         }
     }
 }
