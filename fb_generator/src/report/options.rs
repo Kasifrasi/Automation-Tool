@@ -243,7 +243,6 @@ impl SheetProtection {
             edit_objects: self.edit_objects,
             edit_scenarios: self.edit_scenarios,
             contents: self.contents,
-            ..Default::default()
         }
     }
 }

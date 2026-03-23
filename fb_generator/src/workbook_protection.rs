@@ -371,7 +371,7 @@ fn inject_protection(xml_content: &[u8], protection_elem_str: &str) -> Result<Ve
                         || name_str == "bookViews"
                         || name_str == "functionGroups")
                 {
-                    write_protection_tag(&mut writer, &protection_elem_str)?;
+                    write_protection_tag(&mut writer, protection_elem_str)?;
                     inserted = true;
                 }
 
@@ -379,7 +379,7 @@ fn inject_protection(xml_content: &[u8], protection_elem_str: &str) -> Result<Ve
                 if name_str == "workbookProtection" {
                     let target_name = name_str.as_bytes().to_vec();
                     if !inserted {
-                        write_protection_tag(&mut writer, &protection_elem_str)?;
+                        write_protection_tag(&mut writer, protection_elem_str)?;
                         inserted = true;
                     }
 
@@ -412,14 +412,14 @@ fn inject_protection(xml_content: &[u8], protection_elem_str: &str) -> Result<Ve
 
                 // Insertion point for self-closing tags
                 if !inserted && (name_str == "sheets" || name_str == "bookViews") {
-                    write_protection_tag(&mut writer, &protection_elem_str)?;
+                    write_protection_tag(&mut writer, protection_elem_str)?;
                     inserted = true;
                 }
 
                 // Replace existing workbookProtection tag
                 if name_str == "workbookProtection" {
                     if !inserted {
-                        write_protection_tag(&mut writer, &protection_elem_str)?;
+                        write_protection_tag(&mut writer, protection_elem_str)?;
                         inserted = true;
                     }
                     continue;

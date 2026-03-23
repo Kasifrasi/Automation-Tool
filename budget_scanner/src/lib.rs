@@ -215,7 +215,7 @@ fn is_exact_cost_term(cell: &Data) -> bool {
 fn col_has_cost_term(range: &Range<Data>, col: usize) -> bool {
     range.rows().any(|row| {
         row.get(col)
-            .map_or(false, |cell| is_exact_cost_term(cell))
+            .is_some_and(is_exact_cost_term)
     })
 }
 
@@ -259,7 +259,7 @@ fn find_cost_columns(range: &Range<Data>) -> (Option<usize>, Option<usize>) {
 
     let resolved_first = first_col.or(found[0]);
     let resolved_second = second_col.or_else(|| {
-        found[1].filter(|&col| resolved_first.map_or(true, |fc| col > fc))
+        found[1].filter(|&col| resolved_first.is_none_or(|fc| col > fc))
     });
 
     (resolved_first, resolved_second)
@@ -270,10 +270,10 @@ fn find_value_in_col_d(range: &Range<Data>, terms: &[&str], value_col: usize) ->
     for row in range.rows() {
         if let Some(Data::String(s)) = row.get(3) {
             let trimmed = s.trim();
-            if terms.iter().any(|&t| trimmed == t) {
+            if terms.contains(&trimmed) {
                 return row
                     .get(value_col)
-                    .and_then(|c| cell_text_owned(c))
+                    .and_then(cell_text_owned)
                     .unwrap_or_default();
             }
         }
@@ -303,7 +303,7 @@ fn scan_file_inner(path: &Path) -> Result<BudgetData, ScanError> {
     let get_str = |row: usize, col: usize| -> String {
         range
             .get((row, col))
-            .and_then(|c| cell_text_owned(c))
+            .and_then(cell_text_owned)
             .unwrap_or_default()
     };
 
@@ -383,15 +383,15 @@ fn scan_file_inner(path: &Path) -> Result<BudgetData, ScanError> {
                 number: matched.to_string(),
                 label: row
                     .get(1)
-                    .and_then(|c| cell_text_owned(c))
+                    .and_then(cell_text_owned)
                     .unwrap_or_default(),
                 cost_col1: col1
                     .and_then(|c| row.get(c))
-                    .and_then(|c| cell_text_owned(c))
+                    .and_then(cell_text_owned)
                     .unwrap_or_default(),
                 cost_col2: col2
                     .and_then(|c| row.get(c))
-                    .and_then(|c| cell_text_owned(c))
+                    .and_then(cell_text_owned)
                     .unwrap_or_default(),
             });
         }
@@ -490,7 +490,7 @@ pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions, versio
                 .iter()
                 .rposition(|p| {
                     !p.label.trim().is_empty()
-                        || parse_f64(&p.cost_col1).map_or(false, |v| v != 0.0)
+                        || parse_f64(&p.cost_col1).is_some_and(|v| v != 0.0)
                 })
                 .map(|i| i + 1)
                 .unwrap_or(0);
