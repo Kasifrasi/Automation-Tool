@@ -11,7 +11,7 @@ use std::path::PathBuf;
 const APP_NAME: &str = "automation-tool";
 
 // ==========================================
-// confy Settings Structs
+// Budget-Scanner & FB-Generator: Einstellungen
 // ==========================================
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -133,7 +133,7 @@ impl Default for FbSettings {
 }
 
 // ==========================================
-// confy Load / Save Helpers
+// Budget-Scanner & FB-Generator: Laden / Speichern
 // ==========================================
 
 #[allow(clippy::too_many_arguments)]
@@ -321,7 +321,7 @@ fn save_fb_settings(ui: &MainWindow) {
 }
 
 // ==========================================
-// Defaults (Single Source of Truth)
+// Budget-Scanner & FB-Generator: Standardwerte
 // ==========================================
 
 fn apply_fb_defaults(ui: &MainWindow) {
@@ -416,14 +416,14 @@ fn apply_b2f_defaults(ui: &MainWindow) {
 }
 
 // ==========================================
-// Folder-Creation Settings
+// Ordner-Generator: Einstellungen & Hilfsfunktionen
 // ==========================================
 
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 struct FolderSettings {
     target_folder: String,
     template_file: String,
-}
+}2025_0004_003
 
 fn load_folder_settings(ui: &MainWindow) {
     let s: FolderSettings = confy::load(APP_NAME, "folder").unwrap_or_default();
@@ -488,7 +488,7 @@ fn apply_folder_defaults(ui: &MainWindow) {
 }
 
 // ==========================================
-// Main
+// Einstiegspunkt
 // ==========================================
 
 fn main() -> Result<(), slint::PlatformError> {
@@ -1248,7 +1248,7 @@ fn main() -> Result<(), slint::PlatformError> {
 }
 
 // ==========================================
-// Excel-Generierung
+// FB-Generator: Excel-Ausgabe
 // ==========================================
 
 #[allow(clippy::too_many_arguments)]
