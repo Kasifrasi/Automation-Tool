@@ -425,7 +425,7 @@ fn extract_category(number: &str) -> Option<u8> {
 }
 
 /// Konvertiert `BudgetData` in eine `ReportConfig` für den FB-Generator.
-pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions) -> ReportConfig {
+pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions, version: &str) -> ReportConfig {
     let language = data
         .language
         .parse::<Language>()
@@ -440,7 +440,7 @@ pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions) -> Rep
         .currency(currency)
         .project_number(&data.project_number)
         .project_title(&data.project_title)
-        .version(&data.version)
+        .version(version)
         .build();
 
     let mut body = ReportBody::builder();

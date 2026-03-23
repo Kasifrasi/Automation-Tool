@@ -139,11 +139,11 @@ fn register_static_formulas(model: &mut Model, addrs: &mut Vec<CellAddr>) {
     // Row 12: B13, panel headers
     set_vlookup(model, 12, 1, 10, addrs); // B13
     set_vlookup(model, 12, 11, 22, addrs); // L13: Date
-    set_vlookup(model, 12, 12, 63, addrs); // M13: Euro
+    set_vlookup(model, 12, 12, 63, addrs); // M13: EUR
     set_currency_or_lookup(model, 12, 13, 28, addrs); // N13: Currency
     set_vlookup(model, 12, 14, 58, addrs); // O13: Exchange rate
     set_vlookup(model, 12, 18, 22, addrs); // S13: Date
-    set_vlookup(model, 12, 19, 63, addrs); // T13: Euro
+    set_vlookup(model, 12, 19, 63, addrs); // T13: EUR
     set_currency_or_lookup(model, 12, 20, 28, addrs); // U13: Currency
     set_vlookup(model, 12, 21, 58, addrs); // V13: Exchange rate
 

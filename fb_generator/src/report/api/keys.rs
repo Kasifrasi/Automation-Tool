@@ -234,12 +234,12 @@ define_api_cells! {
 
         // Left panel: rows 14-31 (index 0-17)
         LeftDate => (13, 11, 18),          // L14-L31: date
-        LeftAmountEuro => (13, 12, 18),    // M14-M31: amount Euro
+        LeftAmountEuro => (13, 12, 18),    // M14-M31: amount EUR
         LeftAmountLocal => (13, 13, 18),   // N14-N31: amount local
 
         // Right panel: rows 14-31 (index 0-17)
         RightDate => (13, 18, 18),         // S14-S31: date
-        RightAmountEuro => (13, 19, 18),   // T14-T31: amount Euro
+        RightAmountEuro => (13, 19, 18),   // T14-T31: amount EUR
         RightAmountLocal => (13, 20, 18),  // U14-U31: amount local
     }
 }

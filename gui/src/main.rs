@@ -136,6 +136,7 @@ impl Default for FbSettings {
 // confy Load / Save Helpers
 // ==========================================
 
+#[allow(clippy::too_many_arguments)]
 fn permissions_from_settings(
     select_locked: bool,
     select_unlocked: bool,
@@ -732,6 +733,7 @@ fn main() -> Result<(), slint::PlatformError> {
                     .hide_columns_qv(b2f.get_hide_columns())
                     .hide_language_sheet(b2f.get_hide_lang_sheet());
                 let report_options = options_builder.build();
+                let version = b2f.get_version().to_string();
 
                 // 4. Finanzberichte generieren
                 let mut generated = 0u32;
@@ -765,7 +767,7 @@ fn main() -> Result<(), slint::PlatformError> {
                     }
 
                     let config =
-                        budget_scanner::budget_to_report_config(data, report_options.clone());
+                        budget_scanner::budget_to_report_config(data, report_options.clone(), &version);
                     match config.write_to(&out_path) {
                         Ok(()) => generated += 1,
                         Err(e) => gen_errors.push((
