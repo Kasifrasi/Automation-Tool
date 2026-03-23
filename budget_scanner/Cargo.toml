@@ -10,8 +10,8 @@ license.workspace = true
 [dependencies]
 calamine = "0.34.0"
 comfy-table = "7"
-fb_generator = { path = "../fb_generator" }
-rayon = "1"
+fb_generator = { workspace = true }
+rayon = { workspace = true }
 regex = "1"
 walkdir = "2"
-thiserror = "2"
+thiserror = { workspace = true }

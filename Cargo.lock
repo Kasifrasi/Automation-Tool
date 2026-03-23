@@ -1757,6 +1757,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 
 [[package]]
+name = "folder_generator"
+version = "0.1.0"
+dependencies = [
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2186,6 +2193,7 @@ dependencies = [
  "confy",
  "dark-light",
  "fb_generator",
+ "folder_generator",
  "rfd",
  "rust_xlsxwriter",
  "serde",

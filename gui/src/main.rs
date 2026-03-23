@@ -419,18 +419,6 @@ fn apply_b2f_defaults(ui: &MainWindow) {
 // Folder-Creation Settings
 // ==========================================
 
-const SUBFOLDERS: &[&str] = &[
-    "0. Prüfungen",
-    "1. Vorprojektsaldo",
-    "2. Vertrag",
-    "3. Budget",
-    "4. Finanzberichte",
-    "5. Bankbelege",
-    "6. Mittelanforderungen",
-    "7. Narrative Berichte",
-    "Papierkorb",
-];
-
 #[derive(serde::Serialize, serde::Deserialize, Default)]
 struct FolderSettings {
     target_folder: String,
@@ -457,125 +445,29 @@ fn save_folder_settings(ui: &MainWindow) {
     let _ = confy::store(APP_NAME, "folder", &s);
 }
 
-fn is_valid_project_number(name: &str) -> bool {
-    if name.len() != 13 {
-        return false;
-    }
-    let b = name.as_bytes();
-
-    // Numerisch: nnnn_nnnn_nnn
-    let numeric = b.iter().enumerate().all(|(i, &c)| match i {
-        4 | 9 => c == b'_',
-        _ => c.is_ascii_digit(),
-    });
-
-    // Alpha: b nn nnnn nnn
-    let alpha = b[0].is_ascii_alphabetic()
-        && b.iter().enumerate().skip(1).all(|(i, &c)| match i {
-            1 | 4 | 9 => c == b' ',
-            _ => c.is_ascii_digit(),
-        });
-
-    numeric || alpha
-}
-
-fn create_single_project_folder(
-    project_name: &str,
-    target: &std::path::Path,
-    template: &std::path::Path,
-) -> Result<std::path::PathBuf, String> {
-    let project_root = target.join(project_name);
-    if project_root.exists() {
-        return Err(format!("Ordner existiert bereits: {}", project_root.display()));
-    }
-
-    std::fs::create_dir(&project_root)
-        .map_err(|e| format!("Fehler beim Erstellen von '{project_name}': {e}"))?;
-
-    for sub in SUBFOLDERS {
-        std::fs::create_dir(project_root.join(sub))
-            .map_err(|e| format!("Fehler bei '{project_name}/{sub}': {e}"))?;
-    }
-
-    let ext = template.extension().and_then(|e| e.to_str()).unwrap_or("xlsm");
-    let dest = project_root.join(format!("Pruefung_{project_name}.{ext}"));
-    std::fs::copy(template, &dest)
-        .map_err(|e| format!("Fehler beim Kopieren der Vorlage für '{project_name}': {e}"))?;
-
-    let _ = std::fs::write(project_root.join(".root.txt"), "Ordner automatisch generiert.");
-
-    Ok(project_root)
-}
-
 fn validate_project_name(ui: &MainWindow) {
     let fs = ui.global::<FolderState>();
     let raw = fs.get_project_name().to_string();
     let skip = fs.get_skip_validation();
 
-    // Auto-Formatierung (nur wenn Validierung aktiv)
     if !skip && !raw.is_empty() {
-        let chars: Vec<char> = raw.chars().filter(|c| c.is_ascii_alphanumeric()).collect();
-
-        let formatted = if chars.is_empty() {
-            String::new()
-        } else if chars[0].is_ascii_alphabetic() {
-            // Alpha-Modus: b zz zzzz zzz (max 1 Buchstabe + 9 Ziffern)
-            let letter = chars[0];
-            let digits: Vec<char> = chars[1..]
-                .iter()
-                .filter(|c| c.is_ascii_digit())
-                .copied()
-                .take(9)
-                .collect();
-            let mut result = String::with_capacity(13);
-            result.push(letter);
-            if !digits.is_empty() || raw.len() > 1 {
-                result.push(' ');
-            }
-            for (i, d) in digits.iter().enumerate() {
-                if i == 2 || i == 6 {
-                    result.push(' ');
-                }
-                result.push(*d);
-            }
-            result
-        } else {
-            // Numerisch-Modus: zzzz_zzzz_zzz (max 11 Ziffern)
-            let digits: Vec<char> = chars
-                .iter()
-                .filter(|c| c.is_ascii_digit())
-                .copied()
-                .take(11)
-                .collect();
-            let mut result = String::with_capacity(13);
-            for (i, d) in digits.iter().enumerate() {
-                if i == 4 || i == 8 {
-                    result.push('_');
-                }
-                result.push(*d);
-            }
-            result
-        };
-
+        let formatted = folder_generator::format_project_name(&raw);
         if formatted != raw {
             fs.set_project_name(formatted.into());
         }
     }
 
-    // Validität prüfen
     let name = fs.get_project_name().to_string();
     let valid = if skip {
         !name.is_empty()
     } else {
-        is_valid_project_number(&name)
+        folder_generator::is_valid_project_number(&name)
     };
     fs.set_project_name_valid(valid);
 
-    // Ordner-Existenz prüfen
     let target = fs.get_target_folder().to_string();
     if !target.is_empty() && !name.is_empty() {
-        let path = std::path::PathBuf::from(&target).join(&name);
-        fs.set_folder_exists(path.exists());
+        fs.set_folder_exists(PathBuf::from(&target).join(&name).exists());
     } else {
         fs.set_folder_exists(false);
     }
@@ -1277,48 +1169,35 @@ fn main() -> Result<(), slint::PlatformError> {
                     return;
                 }
 
-                let content = match std::fs::read_to_string(&csv_path) {
-                    Ok(c) => c,
+                match folder_generator::import_csv(&csv_path, &target, &template) {
+                    Ok(result) => {
+                        if result.errors.is_empty() {
+                            fs.set_status_type("success".into());
+                            fs.set_status_message(
+                                format!(
+                                    "{} Ordner erstellt, {} übersprungen (existierten bereits).",
+                                    result.created, result.skipped
+                                )
+                                .into(),
+                            );
+                        } else {
+                            fs.set_status_type("error".into());
+                            fs.set_status_message(
+                                format!(
+                                    "{} erstellt, {} übersprungen, {} Fehler: {}",
+                                    result.created,
+                                    result.skipped,
+                                    result.errors.len(),
+                                    result.errors.join("; ")
+                                )
+                                .into(),
+                            );
+                        }
+                    }
                     Err(e) => {
                         fs.set_status_type("error".into());
-                        fs.set_status_message(format!("CSV konnte nicht gelesen werden: {e}").into());
-                        return;
+                        fs.set_status_message(e.to_string().into());
                     }
-                };
-
-                let mut created = 0u32;
-                let mut skipped = 0u32;
-                let mut errors = Vec::new();
-
-                for line in content.lines() {
-                    for cell in line.split([',', ';']) {
-                        let name = cell.trim().trim_matches('"').trim();
-                        if name.is_empty() {
-                            continue;
-                        }
-                        match create_single_project_folder(name, &target, &template) {
-                            Ok(_) => created += 1,
-                            Err(e) if e.starts_with("Ordner existiert") => skipped += 1,
-                            Err(e) => errors.push(e),
-                        }
-                    }
-                }
-
-                if errors.is_empty() {
-                    fs.set_status_type("success".into());
-                    fs.set_status_message(
-                        format!("{created} Ordner erstellt, {skipped} übersprungen (existierten bereits).").into(),
-                    );
-                } else {
-                    fs.set_status_type("error".into());
-                    fs.set_status_message(
-                        format!(
-                            "{created} erstellt, {skipped} übersprungen, {} Fehler: {}",
-                            errors.len(),
-                            errors.join("; ")
-                        )
-                        .into(),
-                    );
                 }
             }
         }
@@ -1349,7 +1228,7 @@ fn main() -> Result<(), slint::PlatformError> {
                     return;
                 }
 
-                match create_single_project_folder(&project_name, &target, &template) {
+                match folder_generator::create_project_folder(&project_name, &target, &template) {
                     Ok(root) => {
                         fs.set_project_name("".into());
                         fs.set_project_name_valid(false);
@@ -1358,7 +1237,7 @@ fn main() -> Result<(), slint::PlatformError> {
                     }
                     Err(e) => {
                         fs.set_status_type("error".into());
-                        fs.set_status_message(e.into());
+                        fs.set_status_message(e.to_string().into());
                     }
                 }
             }
