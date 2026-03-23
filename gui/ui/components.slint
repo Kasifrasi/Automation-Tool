@@ -113,7 +113,7 @@ export component StatusBanner inherits Rectangle {
             horizontal-stretch: 1;
             wrap: word-wrap;
         }
-        if root.status-type == "success" : TouchArea {
+        if root.status-type == "success" || root.status-type == "error" : TouchArea {
             width: 24px;
             mouse-cursor: pointer;
             clicked => { root.dismiss(); }
