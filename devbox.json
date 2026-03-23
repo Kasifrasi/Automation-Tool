@@ -37,13 +37,12 @@
     "CC": "clang",
     "CXX": "clang++",
     "RUSTC_WRAPPER": "sccache",
-    "SLINT_LIVE_PREVIEW": "1"
+    "LD_LIBRARY_PATH": "$DEVBOX_PACKAGES_DIR/lib:/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH"
   },
   "shell": {
     "init_hook": [
       "rustup default stable",
       "rustup component add rust-src rust-analyzer",
-      "export LD_LIBRARY_PATH=\"$DEVBOX_PACKAGES_DIR/lib:/run/opengl-driver/lib:/run/opengl-driver-32/lib:$LD_LIBRARY_PATH\"",
       "echo '🦀 Rust Dev Workspace | 🛡️ prek Hooks geladen via Devbox'"
     ],
     "scripts": {

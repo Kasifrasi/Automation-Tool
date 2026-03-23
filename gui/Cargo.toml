@@ -19,13 +19,7 @@ fb_generator = { workspace = true }
 budget_scanner = { workspace = true }
 folder_generator = { workspace = true }
 
-# Für Windows
-[target.'cfg(windows)'.dependencies]
-slint = { workspace = true, features = ["backend-winit", "renderer-winit-skia", "live-preview", "compat-1-2", "std"] }
-
-# Für Linux/Unix
-[target.'cfg(unix)'.dependencies]
-slint = { workspace = true, features = ["backend-winit", "renderer-winit-skia", "live-preview", "compat-1-2", "std"] }
+slint = { workspace = true, features = ["backend-winit", "renderer-winit-software", "compat-1-2", "std"] }
 
 [build-dependencies]
 slint-build = { workspace = true }

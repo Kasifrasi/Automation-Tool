@@ -11,6 +11,38 @@ use std::path::PathBuf;
 const APP_NAME: &str = "automation-tool";
 
 // ==========================================
+// Theme: Einstellungen
+// ==========================================
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ThemeSettings {
+    dark_mode: bool,
+}
+
+impl Default for ThemeSettings {
+    fn default() -> Self {
+        Self {
+            dark_mode: matches!(dark_light::detect(), Ok(dark_light::Mode::Dark)),
+        }
+    }
+}
+
+fn load_theme_settings(ui: &MainWindow) {
+    let s: ThemeSettings = confy::load(APP_NAME, "theme").unwrap_or_default();
+    ui.set_dark_mode(s.dark_mode);
+    let scheme = if s.dark_mode {
+        slint::language::ColorScheme::Dark
+    } else {
+        slint::language::ColorScheme::Light
+    };
+    ui.global::<Palette>().set_color_scheme(scheme);
+}
+
+fn save_theme_settings(dark_mode: bool) {
+    let _ = confy::store(APP_NAME, "theme", &ThemeSettings { dark_mode });
+}
+
+// ==========================================
 // Budget-Scanner & FB-Generator: Einstellungen
 // ==========================================
 
@@ -502,13 +534,8 @@ fn main() -> Result<(), slint::PlatformError> {
     apply_folder_defaults(&ui);
     load_folder_settings(&ui);
 
-    // Dark Mode: System-Einstellung erkennen
-    let system_dark = matches!(dark_light::detect(), Ok(dark_light::Mode::Dark));
-    ui.set_dark_mode(system_dark);
-    if system_dark {
-        ui.global::<Palette>()
-            .set_color_scheme(slint::language::ColorScheme::Dark);
-    }
+    // Theme: gespeicherte Einstellung laden (Fallback: System-Erkennung)
+    load_theme_settings(&ui);
 
     // Dark Mode Toggle
     ui.on_toggle_dark_mode({
@@ -521,6 +548,7 @@ fn main() -> Result<(), slint::PlatformError> {
                     slint::language::ColorScheme::Light
                 };
                 ui.global::<Palette>().set_color_scheme(scheme);
+                save_theme_settings(dark);
             }
         }
     });
