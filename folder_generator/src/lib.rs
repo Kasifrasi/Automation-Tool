@@ -103,7 +103,7 @@ pub fn format_project_name(raw: &str) -> String {
 
     if chars[0].is_ascii_alphabetic() {
         // Alpha-Modus: b zz zzzz zzz (max 1 Buchstabe + 9 Ziffern)
-        let letter = chars[0];
+        let letter = chars[0].to_ascii_uppercase();
         let digits: Vec<char> = chars[1..]
             .iter()
             .filter(|c| c.is_ascii_digit())

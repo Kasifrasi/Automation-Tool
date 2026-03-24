@@ -361,11 +361,12 @@ fn apply_fb_defaults(ui: &MainWindow) {
 
     fb.set_langs(Languages {
         de: true,
-        en: false,
-        fr: false,
-        es: false,
-        pt: false,
+        en: true,
+        fr: true,
+        es: true,
+        pt: true,
     });
+    fb.set_all_langs(true);
 
     fb.set_version("".into());
     fb.set_folder("".into());

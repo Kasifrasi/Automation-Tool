@@ -58,7 +58,7 @@ export component FBPage inherits VerticalLayout {
                         spacing: 16px;
                         CheckBox {
                             text: "Alle";
-                            checked <=> alle;
+                            checked <=> FBState.all-langs;
                             toggled => {
                                 FBState.langs.de = self.checked;
                                 FBState.langs.en = self.checked;
@@ -76,7 +76,7 @@ export component FBPage inherits VerticalLayout {
                         CheckBox { text: "Português"; checked <=> FBState.langs.pt; toggled => { update_langs() } }
                         
                         function update_langs() {
-                                alle = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
+                                FBState.all-langs = FBState.langs.de && FBState.langs.en && FBState.langs.fr && FBState.langs.es && FBState.langs.pt;
                                 FBState.save-settings();
                         }
                     }
