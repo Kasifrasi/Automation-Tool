@@ -321,13 +321,21 @@ export component ProjectNameField inherits VerticalLayout {
             toggled => { root.validated(); }
         }
     }
+    private property <string> pre-format-text: "";
+
     HorizontalLayout {
         spacing: 8px;
-        LineEdit {
+        input := LineEdit {
             text <=> root.project-name;
             placeholder-text: "z.B. 2025_0004_003";
             horizontal-stretch: 1;
-            edited => { root.validated(); }
+            edited => {
+                root.pre-format-text = root.project-name;
+                root.validated();
+                if root.project-name != root.pre-format-text {
+                    input.set-selection-offsets(root.project-name.character-count, root.project-name.character-count);
+                }
+            }
         }
         // Validierungs-Logik Icons
         if root.target-folder == "" : TouchArea {
