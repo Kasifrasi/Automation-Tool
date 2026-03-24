@@ -487,8 +487,8 @@ pub fn budget_to_report_config(data: &BudgetData, options: ReportOptions, versio
                 .map(|i| i + 1)
                 .unwrap_or(0);
 
-            // Relevante Zeilen + 3 leere, mindestens 5 total
-            let count = (last_relevant + 3).max(5);
+            // Relevante Zeilen + 3 leere, mindestens 3 total
+            let count = (last_relevant + 3).max(3);
             for i in 0..count {
                 if let Some(pos) = subs.get(i) {
                     let approved = parse_f64(&pos.cost_col1).unwrap_or(0.0);
