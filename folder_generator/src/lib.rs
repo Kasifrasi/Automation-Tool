@@ -99,6 +99,8 @@ pub fn format_project_name(raw: &str) -> String {
         return String::new();
     }
 
+    let trailing_sep = raw.ends_with(|c: char| c.is_ascii_punctuation() || c.is_ascii_whitespace());
+
     if chars[0].is_ascii_alphabetic() {
         // Alpha-Modus: b zz zzzz zzz (max 1 Buchstabe + 9 Ziffern)
         let letter = chars[0];
@@ -110,7 +112,7 @@ pub fn format_project_name(raw: &str) -> String {
             .collect();
         let mut result = String::with_capacity(13);
         result.push(letter);
-        if !digits.is_empty() || raw.len() > 1 {
+        if !digits.is_empty() || trailing_sep {
             result.push(' ');
         }
         for (i, d) in digits.iter().enumerate() {
@@ -118,6 +120,9 @@ pub fn format_project_name(raw: &str) -> String {
                 result.push(' ');
             }
             result.push(*d);
+        }
+        if (digits.len() == 2 || digits.len() == 6) && trailing_sep {
+            result.push(' ');
         }
         result
     } else {
@@ -134,6 +139,9 @@ pub fn format_project_name(raw: &str) -> String {
                 result.push('_');
             }
             result.push(*d);
+        }
+        if (digits.len() == 4 || digits.len() == 8) && trailing_sep {
+            result.push('_');
         }
         result
     }
@@ -177,10 +185,7 @@ pub fn create_project_folder(
         .and_then(|e| e.to_str())
         .unwrap_or("xlsm");
     let dest = project_root.join(format!("Pruefung_{project_name}.{ext}"));
-    std::fs::copy(template, &dest).map_err(|e| FolderError::CopyTemplate {
-        dest,
-        source: e,
-    })?;
+    std::fs::copy(template, &dest).map_err(|e| FolderError::CopyTemplate { dest, source: e })?;
 
     let _ = std::fs::write(
         project_root.join(".root.txt"),
