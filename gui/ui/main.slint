@@ -81,12 +81,20 @@ export component MainWindow inherits Window {
                     VerticalLayout {
                         alignment: center;
                         Button {
-                            text: UpdateState.update-available
-                                ? "Installieren"
-                                : "Updates prüfen";
-                            enabled: !UpdateState.checking && UpdateState.status != "Installiert – bitte neu starten";
+                            text: UpdateState.installed
+                                ? "Neu starten"
+                                : UpdateState.update-available
+                                    ? "Installieren"
+                                    : "Updates prüfen";
+                            enabled: !UpdateState.checking;
                             width: 130px;
-                            clicked => { UpdateState.check-for-update(); }
+                            clicked => {
+                                if UpdateState.installed {
+                                    UpdateState.restart();
+                                } else {
+                                    UpdateState.check-for-update();
+                                }
+                            }
                         }
                     }
 

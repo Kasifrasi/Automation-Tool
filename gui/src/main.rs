@@ -562,6 +562,21 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    ui.global::<UpdateState>().on_restart({
+        let ui_handle = ui.as_weak();
+        move || {
+            // Aktuellen Pfad der .exe ermitteln und neu starten
+            if let Ok(exe) = std::env::current_exe() {
+                let _ = std::process::Command::new(exe).spawn();
+            }
+            // Aktuelles Fenster schließen
+            if let Some(ui) = ui_handle.upgrade() {
+                let _ = ui.hide();
+            }
+            std::process::exit(0);
+        }
+    });
+
     // Dark Mode Toggle
     ui.on_toggle_dark_mode({
         let ui_handle = ui.as_weak();

@@ -53,6 +53,7 @@ pub fn spawn_install(handle: Weak<MainWindow>) {
                         let us = ui.global::<UpdateState>();
                         us.set_checking(false);
                         us.set_update_available(false);
+                        us.set_installed(true);
                         us.set_status(msg.into());
                     }
                 });
