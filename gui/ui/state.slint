@@ -155,3 +155,22 @@ export global FolderState {
     callback reset();
     callback dismiss-status();
 }
+
+// ========================================
+// Auto-Update State
+// ========================================
+export global UpdateState {
+    // Mögliche Werte:
+    //   ""                                – Leerlauf
+    //   "Prüfe..."                        – Netzwerk-Request läuft
+    //   "Bereits aktuell"                 – kein Update
+    //   "Update verfügbar: v1.x.y"        – Update gefunden
+    //   "Installiert – bitte neu starten" – Update eingespielt
+    //   "Fehler: <message>"               – Fehler
+    in-out property <string> status: "";
+    in-out property <bool> checking: false;
+    in-out property <bool> update-available: false;
+    in-out property <string> app-version: "";
+
+    callback check-for-update();
+}

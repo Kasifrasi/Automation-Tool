@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
   "packages": [
     "bacon@latest",
+    "cargo-release@latest",
     "cargo-about@latest",
     "cargo-audit@latest",
     "cargo-cyclonedx@latest",

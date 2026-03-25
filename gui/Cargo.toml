@@ -20,6 +20,8 @@ budget_scanner = { workspace = true }
 folder_generator = { workspace = true }
 
 slint = { workspace = true, features = ["backend-winit", "renderer-winit-software", "compat-1-2", "std"] }
+self_update = { version = "0.41", default-features = false, features = ["rustls"] }
+semver = "1"
 
 [build-dependencies]
 slint-build = { workspace = true }

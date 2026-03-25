@@ -2,6 +2,8 @@
 
 slint::include_modules!();
 
+mod updater;
+
 use fb_generator::{
     Language, PositionEntry, ReportBody, ReportConfig, ReportHeader, ReportOptions, SheetProtection,
 };
@@ -537,6 +539,25 @@ fn main() -> Result<(), slint::PlatformError> {
 
     // Theme: gespeicherte Einstellung laden (Fallback: System-Erkennung)
     load_theme_settings(&ui);
+
+    // ==========================================
+    // UpdateState: Versionsnummer + Callback
+    // ==========================================
+    ui.global::<UpdateState>().set_app_version(env!("CARGO_PKG_VERSION").into());
+
+    ui.global::<UpdateState>().on_check_for_update({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let us = ui.global::<UpdateState>();
+                if us.get_update_available() {
+                    updater::spawn_install(ui_handle.clone());
+                } else {
+                    updater::spawn_check(ui_handle.clone());
+                }
+            }
+        }
+    });
 
     // Dark Mode Toggle
     ui.on_toggle_dark_mode({

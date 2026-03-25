@@ -1,4 +1,4 @@
-import { Palette, Switch, AboutSlint } from "std-widgets.slint";
+import { Palette, Switch, AboutSlint, Button } from "std-widgets.slint";
 export { Palette }
 import { FBPage } from "fb_page.slint";
 import { BudgetPage } from "budget_to_fb.slint";
@@ -12,8 +12,9 @@ import {
     FBState,
     BudgetState,
     FolderState,
+    UpdateState,
 } from "state.slint";
-export { Languages, Categories, SheetPermissions, FBState, BudgetState, FolderState }
+export { Languages, Categories, SheetPermissions, FBState, BudgetState, FolderState, UpdateState }
 import "./fonts/InterVariable.ttf";
 import "./fonts/InterVariable-Italic.ttf";
 
@@ -61,6 +62,46 @@ export component MainWindow inherits Window {
             // Ebene 1: Titel links, Switch rechts
             HorizontalLayout {
                 spacing: 8px;
+
+                if root.current-page == "home": HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+                    vertical-stretch: 1;
+
+                    VerticalLayout {
+                        alignment: center;
+                        Text {
+                            text: "v" + UpdateState.app-version;
+                            font-size: 11px;
+                            color: Palette.foreground;
+                            opacity: 0.5;
+                        }
+                    }
+
+                    VerticalLayout {
+                        alignment: center;
+                        Button {
+                            text: UpdateState.update-available
+                                ? "Installieren"
+                                : "Updates prüfen";
+                            enabled: !UpdateState.checking;
+                            width: 130px;
+                            clicked => { UpdateState.check-for-update(); }
+                        }
+                    }
+
+                    if UpdateState.status != "" : VerticalLayout {
+                        alignment: center;
+                        Text {
+                            text: UpdateState.status;
+                            font-size: 11px;
+                            color: UpdateState.update-available
+                                ? Palette.accent-background
+                                : Palette.foreground;
+                            opacity: 0.85;
+                        }
+                    }
+                }
 
                 if root.current-page != "home": VerticalLayout {
                     spacing: 2px;

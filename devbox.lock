@@ -481,6 +481,54 @@
         }
       }
     },
+    "cargo-release@latest": {
+      "last_modified": "2026-03-21T07:29:51Z",
+      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#cargo-release",
+      "source": "devbox-search",
+      "version": "1.1.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/myysg03cqp2p2rn407g9h7sp0jw1m1zg-cargo-release-1.1.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/myysg03cqp2p2rn407g9h7sp0jw1m1zg-cargo-release-1.1.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/b3l9fajyxlf1hlyxrik6w7kn0cmsk64a-cargo-release-1.1.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/b3l9fajyxlf1hlyxrik6w7kn0cmsk64a-cargo-release-1.1.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/sal2qmdp2rzb7yy5s051k4nh1i56nfsc-cargo-release-1.1.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/sal2qmdp2rzb7yy5s051k4nh1i56nfsc-cargo-release-1.1.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/g98fdmkcg4g99hrg8ab5xlyshkm6085v-cargo-release-1.1.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/g98fdmkcg4g99hrg8ab5xlyshkm6085v-cargo-release-1.1.1"
+        }
+      }
+    },
     "clang@latest": {
       "last_modified": "2026-03-02T11:03:52Z",
       "resolved": "github:NixOS/nixpkgs/dc7513872406b53d2ff417a003895d6daffdff2f#clang",
