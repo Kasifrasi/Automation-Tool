@@ -25,6 +25,9 @@ jobs:
       # Caching beschleunigt zukünftige Builds enorm
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "windows-release"
+          cache-on-failure: true
 
       - name: Build GUI
         # Baut nur die GUI-Anwendung im Release-Modus
