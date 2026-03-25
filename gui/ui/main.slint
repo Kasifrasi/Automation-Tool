@@ -84,7 +84,7 @@ export component MainWindow inherits Window {
                             text: UpdateState.update-available
                                 ? "Installieren"
                                 : "Updates prüfen";
-                            enabled: !UpdateState.checking;
+                            enabled: !UpdateState.checking && UpdateState.status != "Installiert – bitte neu starten";
                             width: 130px;
                             clicked => { UpdateState.check-for-update(); }
                         }
