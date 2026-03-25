@@ -495,6 +495,42 @@ fn save_folder_settings(ui: &MainWindow) {
     let _ = confy::store(APP_NAME, "folder", &s);
 }
 
+/// Sortiert wie Windows Explorer: Zahlen numerisch, dann alphabetisch (case-insensitive).
+fn sort_subfolders(items: &mut [slint::SharedString]) {
+    items.sort_by(|a, b| natural_cmp(&a.to_string(), &b.to_string()));
+}
+
+/// Natural sort: "2. Vertrag" < "10. Berichte" (nicht lexikographisch).
+fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
+    let mut ai = a.chars().peekable();
+    let mut bi = b.chars().peekable();
+
+    loop {
+        match (ai.peek(), bi.peek()) {
+            (None, None) => return std::cmp::Ordering::Equal,
+            (None, Some(_)) => return std::cmp::Ordering::Less,
+            (Some(_), None) => return std::cmp::Ordering::Greater,
+            (Some(ac), Some(bc)) => {
+                if ac.is_ascii_digit() && bc.is_ascii_digit() {
+                    let na: String = ai.by_ref().take_while(|c| c.is_ascii_digit()).collect();
+                    let nb: String = bi.by_ref().take_while(|c| c.is_ascii_digit()).collect();
+                    let cmp = na.len().cmp(&nb.len()).then_with(|| na.cmp(&nb));
+                    if cmp != std::cmp::Ordering::Equal {
+                        return cmp;
+                    }
+                } else {
+                    let ca = ai.next().unwrap().to_ascii_lowercase();
+                    let cb = bi.next().unwrap().to_ascii_lowercase();
+                    let cmp = ca.cmp(&cb);
+                    if cmp != std::cmp::Ordering::Equal {
+                        return cmp;
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn get_subfolders_vec(ui: &MainWindow) -> Vec<String> {
     ui.global::<FolderState>().get_subfolders().iter().map(|s| s.to_string()).collect()
 }
@@ -1303,6 +1339,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 let model = fs.get_subfolders();
                 let mut items: Vec<slint::SharedString> = model.iter().collect();
                 items.push(name);
+                sort_subfolders(&mut items);
                 fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(items)).into());
                 save_folder_settings(&ui);
             }
@@ -1334,6 +1371,7 @@ fn main() -> Result<(), slint::PlatformError> {
                 let mut items: Vec<slint::SharedString> = model.iter().collect();
                 if (idx as usize) < items.len() {
                     items[idx as usize] = new_name;
+                    sort_subfolders(&mut items);
                     fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(items)).into());
                     save_folder_settings(&ui);
                 }
@@ -1345,7 +1383,8 @@ fn main() -> Result<(), slint::PlatformError> {
         let ui_handle = ui.as_weak();
         move || {
             if let Some(ui) = ui_handle.upgrade() {
-                let defaults: Vec<slint::SharedString> = folder_generator::SUBFOLDERS.iter().map(|s| (*s).into()).collect();
+                let mut defaults: Vec<slint::SharedString> = folder_generator::SUBFOLDERS.iter().map(|s| (*s).into()).collect();
+                sort_subfolders(&mut defaults);
                 ui.global::<FolderState>().set_subfolders(std::rc::Rc::new(slint::VecModel::from(defaults)).into());
                 save_folder_settings(&ui);
             }

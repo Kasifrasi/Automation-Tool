@@ -41,14 +41,14 @@ pub struct CsvImportResult {
 // ==========================================
 
 pub const SUBFOLDERS: &[&str] = &[
-    "0. Prüfungen",
-    "1. Vorprojektsaldo",
-    "2. Vertrag",
-    "3. Budget",
-    "4. Finanzberichte",
-    "5. Bankbelege",
-    "6. Mittelanforderungen",
-    "7. Narrative Berichte",
+    "00. Prüfungen",
+    "01. Vorprojektsaldo",
+    "02. Vertrag",
+    "03. Budget",
+    "04. Finanzberichte",
+    "05. Bankbelege",
+    "06. Mittelanforderungen",
+    "07. Narrative Berichte",
     "Papierkorb",
 ];
 
