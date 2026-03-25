@@ -38,8 +38,12 @@ jobs:
           path: target/release/gui.exe
           if-no-files-found: error
 
+      # Umbenennen damit self_update das Asset anhand des Target-Triples findet
+      - name: Rename artifact
+        run: cp target/release/gui.exe target/release/gui-x86_64-pc-windows-msvc.exe
+
       # Erstellt automatisch ein GitHub Release und lädt die .exe hoch
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: target/release/gui.exe
+          files: target/release/gui-x86_64-pc-windows-msvc.exe

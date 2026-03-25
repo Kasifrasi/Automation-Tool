@@ -7,7 +7,7 @@ use slint::{ComponentHandle, Weak};
 
 const GITHUB_OWNER: &str = "Kasifrasi";
 const GITHUB_REPO: &str = "Automation-Tool";
-const ASSET_NAME: &str = "gui.exe";
+const ASSET_NAME: &str = "gui";
 
 // ── Öffentliche API ──────────────────────────────────────────────────────────
 
