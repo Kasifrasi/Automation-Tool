@@ -33,7 +33,7 @@ export component BudgetPage inherits VerticalLayout {
                 LineEdit {
                     text <=> BudgetState.src-folder;
                     read-only: true;
-                    placeholder-text: "Quellordner...";
+                    placeholder-text: "* Quellordner...";
                     horizontal-stretch: 1;
                 }
                 Button {
@@ -49,7 +49,7 @@ export component BudgetPage inherits VerticalLayout {
                 LineEdit {
                     text <=> BudgetState.out-folder;
                     read-only: true;
-                    placeholder-text: "Ausgabeordner...";
+                    placeholder-text: "* Ausgabeordner...";
                     horizontal-stretch: 1;
                 }
                 Button {
@@ -78,10 +78,10 @@ export component BudgetPage inherits VerticalLayout {
                     // Version
                     VerticalLayout {
                         spacing: 4px;
-                        Text { text: "Version"; font-size: 13px; font-weight: 600; opacity: 0.8; }
+                        Text { text: "* Version"; font-size: 13px; font-weight: 600; opacity: 0.8; }
                         LineEdit {
                             text <=> BudgetState.version;
-                            placeholder-text: "z.B. v2025-1";
+                            placeholder-text: "* z.B. v2025-1";
                             width: 160px;
                             edited => { BudgetState.save-settings(); }
                         }
@@ -197,7 +197,7 @@ export component BudgetPage inherits VerticalLayout {
         Button {
             text: BudgetState.status-type == "pending" ? "Scannt..." : "Scan starten (F5)";
             primary: true;
-            enabled: BudgetState.src-folder != "" && BudgetState.out-folder != "" && BudgetState.status-type != "pending";
+            enabled: BudgetState.src-folder != "" && BudgetState.out-folder != "" && BudgetState.version != "" && BudgetState.status-type != "pending";
             clicked => { BudgetState.scan(); }
             width: 200px;
         }

@@ -29,7 +29,7 @@ export component FBPage inherits VerticalLayout {
             LineEdit {
                 text <=> FBState.folder;
                 read-only: true;
-                placeholder-text: "Ausgabeordner...";
+                placeholder-text: "* Ausgabeordner...";
                 horizontal-stretch: 1;
             }
             Button {
@@ -119,10 +119,10 @@ export component FBPage inherits VerticalLayout {
                     // Version
                     VerticalLayout {
                         spacing: 4px;
-                        Text { text: "Version"; font-size: 13px; font-weight: 600; opacity: 0.8; }
+                        Text { text: "* Version"; font-size: 13px; font-weight: 600; opacity: 0.8; }
                         LineEdit {
                             text <=> FBState.version;
-                            placeholder-text: "z.B. v2025-1";
+                            placeholder-text: "* z.B. v2025-1";
                             width: 160px;
                             edited => { FBState.save-settings(); }
                         }
