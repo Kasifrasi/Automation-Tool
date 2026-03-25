@@ -672,7 +672,7 @@ dependencies = [
 
 [[package]]
 name = "budget_scanner"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "calamine",
  "comfy-table",
@@ -1704,7 +1704,7 @@ dependencies = [
 
 [[package]]
 name = "fb_generator"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "base64",
  "byteorder",
@@ -1777,7 +1777,7 @@ checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
 
 [[package]]
 name = "folder_generator"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "thiserror 2.0.18",
 ]
@@ -2188,7 +2188,7 @@ dependencies = [
 
 [[package]]
 name = "gui"
-version = "1.0.3"
+version = "1.0.4"
 dependencies = [
  "budget_scanner",
  "confy",
