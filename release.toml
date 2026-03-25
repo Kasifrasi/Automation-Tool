@@ -7,5 +7,3 @@ tag-name = "v{{version}}"
 # Alles in einem Commit zusammenfassen
 consolidate-commits = true
 
-# Release-Commit nicht als CI-Build triggern (nur der Tag-Push triggert den Workflow)
-pre-release-commit-message = "chore: Release v{{version}} [skip ci]"
