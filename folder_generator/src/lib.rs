@@ -154,13 +154,14 @@ pub fn format_project_name(raw: &str) -> String {
 /// Creates a project folder structure under `target/project_name`.
 ///
 /// - Creates the project root directory
-/// - Creates all standard subfolders ([`SUBFOLDERS`])
+/// - Creates all given subfolders
 /// - Copies `template` as `Pruefung_{project_name}.{ext}`
 /// - Writes a `.root.txt` marker file
 pub fn create_project_folder(
     project_name: &str,
     target: &Path,
     template: &Path,
+    subfolders: &[&str],
 ) -> Result<PathBuf, FolderError> {
     let project_root = target.join(project_name);
     if project_root.exists() {
@@ -172,7 +173,7 @@ pub fn create_project_folder(
         source: e,
     })?;
 
-    for sub in SUBFOLDERS {
+    for sub in subfolders {
         let sub_path = project_root.join(sub);
         std::fs::create_dir(&sub_path).map_err(|e| FolderError::CreateDir {
             path: sub_path,
@@ -207,6 +208,7 @@ pub fn import_csv(
     csv_path: &Path,
     target: &Path,
     template: &Path,
+    subfolders: &[&str],
 ) -> Result<CsvImportResult, FolderError> {
     let content = std::fs::read_to_string(csv_path).map_err(FolderError::CsvRead)?;
 
@@ -218,7 +220,7 @@ pub fn import_csv(
             if name.is_empty() {
                 continue;
             }
-            match create_project_folder(name, target, template) {
+            match create_project_folder(name, target, template, subfolders) {
                 Ok(_) => result.created += 1,
                 Err(FolderError::AlreadyExists(_)) => result.skipped += 1,
                 Err(e) => result.errors.push(e.to_string()),

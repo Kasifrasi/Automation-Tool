@@ -142,6 +142,9 @@ export global FolderState {
     in-out property <string> csv-file;
     in-out property <string> csv-target-folder;
 
+    // Editierbare Unterordner-Liste
+    in-out property <[string]> subfolders: [];
+
     in-out property <string> status-type: "idle";
     in-out property <string> status-message: "";
 
@@ -154,6 +157,11 @@ export global FolderState {
     callback import-csv();
     callback reset();
     callback dismiss-status();
+
+    callback add-subfolder(string);
+    callback remove-subfolder(int);
+    callback rename-subfolder(int, string);
+    callback reset-subfolders();
 }
 
 // ========================================

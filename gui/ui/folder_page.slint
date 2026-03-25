@@ -4,7 +4,10 @@ import { FolderState, GlobalUI } from "state.slint";
 
 export component FolderPage inherits VerticalLayout {
     spacing: GlobalUI.spacing;
-    
+
+    // Eingabefeld für neuen Ordner
+    property <string> new-folder-name: "";
+
     // --- 1. FIXED HEADER (Status) ---
     if FolderState.status-type != "idle": StatusBanner {
         status-type: FolderState.status-type;
@@ -12,21 +15,23 @@ export component FolderPage inherits VerticalLayout {
         dismiss => { FolderState.dismiss-status(); }
     }
 
-    // --- 2. SCROLLABLE CONTENT ---
-    ScrollView {
+    // --- 2. MAIN CONTENT ---
+    HorizontalLayout {
         vertical-stretch: 1;
-        viewport-height: folder-scroll-layout.min-height;
+        spacing: 16px;
 
-        folder-scroll-layout := VerticalLayout {
-            spacing: 20px;
-            padding-right: 16px; // Platz für die Scrollbar
+        // ─── Links: Formulare (70%) ───
+        ScrollView {
+            horizontal-stretch: 7;
+            viewport-height: folder-scroll-layout.min-height;
 
-            // --- SEKTION 1: EINZELNER ORDNER ---
-            HorizontalLayout {
-                alignment: start;
+            folder-scroll-layout := VerticalLayout {
+                spacing: 20px;
+                padding-right: 16px;
+
+                // --- SEKTION 1: EINZELNER ORDNER ---
                 Card {
                     title: "Einzelner Ordner";
-                    width: 75%;
                     VerticalLayout {
                         spacing: 15px;
 
@@ -50,7 +55,6 @@ export component FolderPage inherits VerticalLayout {
                             clicked => { FolderState.select-folder(); }
                         }
 
-                        // Footer Buttons innerhalb der Card
                         HorizontalLayout {
                             spacing: 12px;
                             alignment: end;
@@ -67,14 +71,10 @@ export component FolderPage inherits VerticalLayout {
                         }
                     }
                 }
-            }
 
-            // --- SEKTION 2: CSV-IMPORT ---
-            HorizontalLayout {
-                alignment: start;
+                // --- SEKTION 2: CSV-IMPORT ---
                 Card {
                     title: "CSV-Import";
-                    width: 75%;
                     VerticalLayout {
                         spacing: 15px;
                         Text {
@@ -104,6 +104,80 @@ export component FolderPage inherits VerticalLayout {
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // ─── Rechts: Editierbare Ordnerliste (30%) ───
+        Card {
+            title: "Unterordner";
+            horizontal-stretch: 3;
+
+            VerticalLayout {
+                spacing: 8px;
+
+                // Scrollbare Liste
+                ScrollView {
+                    vertical-stretch: 1;
+                    viewport-height: subfolder-list.min-height;
+
+                    subfolder-list := VerticalLayout {
+                        spacing: 4px;
+
+                        for folder[idx] in FolderState.subfolders: HorizontalLayout {
+                            spacing: 4px;
+
+                            LineEdit {
+                                text: folder;
+                                horizontal-stretch: 1;
+                                edited(new-text) => {
+                                    FolderState.rename-subfolder(idx, new-text);
+                                }
+                            }
+
+                            Button {
+                                text: "✕";
+                                width: 32px;
+                                clicked => {
+                                    FolderState.remove-subfolder(idx);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Neuen Ordner hinzufügen
+                HorizontalLayout {
+                    spacing: 4px;
+
+                    LineEdit {
+                        text <=> root.new-folder-name;
+                        placeholder-text: "Neuer Ordner...";
+                        horizontal-stretch: 1;
+                        accepted => {
+                            if root.new-folder-name != "" {
+                                FolderState.add-subfolder(root.new-folder-name);
+                                root.new-folder-name = "";
+                            }
+                        }
+                    }
+
+                    Button {
+                        text: "+";
+                        width: 32px;
+                        primary: true;
+                        enabled: root.new-folder-name != "";
+                        clicked => {
+                            FolderState.add-subfolder(root.new-folder-name);
+                            root.new-folder-name = "";
+                        }
+                    }
+                }
+
+                // Standard wiederherstellen
+                Button {
+                    text: "Standard wiederherstellen";
+                    clicked => { FolderState.reset-subfolders(); }
                 }
             }
         }

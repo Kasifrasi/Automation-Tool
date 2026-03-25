@@ -454,10 +454,21 @@ fn apply_b2f_defaults(ui: &MainWindow) {
 // Ordner-Generator: Einstellungen & Hilfsfunktionen
 // ==========================================
 
-#[derive(serde::Serialize, serde::Deserialize, Default)]
+#[derive(serde::Serialize, serde::Deserialize)]
 struct FolderSettings {
     target_folder: String,
     template_file: String,
+    subfolders: Vec<String>,
+}
+
+impl Default for FolderSettings {
+    fn default() -> Self {
+        Self {
+            target_folder: String::new(),
+            template_file: String::new(),
+            subfolders: folder_generator::SUBFOLDERS.iter().map(|s| s.to_string()).collect(),
+        }
+    }
 }
 
 fn load_folder_settings(ui: &MainWindow) {
@@ -469,15 +480,23 @@ fn load_folder_settings(ui: &MainWindow) {
     if !s.template_file.is_empty() {
         fs.set_template_file(s.template_file.into());
     }
+    let model: Vec<slint::SharedString> = s.subfolders.iter().map(|s| s.into()).collect();
+    fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(model)).into());
 }
 
 fn save_folder_settings(ui: &MainWindow) {
     let fs = ui.global::<FolderState>();
+    let subfolders: Vec<String> = fs.get_subfolders().iter().map(|s| s.to_string()).collect();
     let s = FolderSettings {
         target_folder: fs.get_target_folder().to_string(),
         template_file: fs.get_template_file().to_string(),
+        subfolders,
     };
     let _ = confy::store(APP_NAME, "folder", &s);
+}
+
+fn get_subfolders_vec(ui: &MainWindow) -> Vec<String> {
+    ui.global::<FolderState>().get_subfolders().iter().map(|s| s.to_string()).collect()
 }
 
 fn validate_project_name(ui: &MainWindow) {
@@ -520,6 +539,8 @@ fn apply_folder_defaults(ui: &MainWindow) {
     fs.set_csv_target_folder("".into());
     fs.set_status_type("idle".into());
     fs.set_status_message("".into());
+    let defaults: Vec<slint::SharedString> = folder_generator::SUBFOLDERS.iter().map(|s| (*s).into()).collect();
+    fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(defaults)).into());
 }
 
 // ==========================================
@@ -1237,7 +1258,9 @@ fn main() -> Result<(), slint::PlatformError> {
                     return;
                 }
 
-                match folder_generator::import_csv(&csv_path, &target, &template) {
+                let subs = get_subfolders_vec(&ui);
+                let subs_refs: Vec<&str> = subs.iter().map(|s| s.as_str()).collect();
+                match folder_generator::import_csv(&csv_path, &target, &template, &subs_refs) {
                     Ok(result) => {
                         if result.errors.is_empty() {
                             fs.set_status_type("success".into());
@@ -1271,6 +1294,64 @@ fn main() -> Result<(), slint::PlatformError> {
         }
     });
 
+    // ─── Subfolder-Liste: Callbacks ───
+    ui.global::<FolderState>().on_add_subfolder({
+        let ui_handle = ui.as_weak();
+        move |name| {
+            if let Some(ui) = ui_handle.upgrade() {
+                let fs = ui.global::<FolderState>();
+                let model = fs.get_subfolders();
+                let mut items: Vec<slint::SharedString> = model.iter().collect();
+                items.push(name);
+                fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(items)).into());
+                save_folder_settings(&ui);
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_remove_subfolder({
+        let ui_handle = ui.as_weak();
+        move |idx| {
+            if let Some(ui) = ui_handle.upgrade() {
+                let fs = ui.global::<FolderState>();
+                let model = fs.get_subfolders();
+                let mut items: Vec<slint::SharedString> = model.iter().collect();
+                if (idx as usize) < items.len() {
+                    items.remove(idx as usize);
+                    fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(items)).into());
+                    save_folder_settings(&ui);
+                }
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_rename_subfolder({
+        let ui_handle = ui.as_weak();
+        move |idx, new_name| {
+            if let Some(ui) = ui_handle.upgrade() {
+                let fs = ui.global::<FolderState>();
+                let model = fs.get_subfolders();
+                let mut items: Vec<slint::SharedString> = model.iter().collect();
+                if (idx as usize) < items.len() {
+                    items[idx as usize] = new_name;
+                    fs.set_subfolders(std::rc::Rc::new(slint::VecModel::from(items)).into());
+                    save_folder_settings(&ui);
+                }
+            }
+        }
+    });
+
+    ui.global::<FolderState>().on_reset_subfolders({
+        let ui_handle = ui.as_weak();
+        move || {
+            if let Some(ui) = ui_handle.upgrade() {
+                let defaults: Vec<slint::SharedString> = folder_generator::SUBFOLDERS.iter().map(|s| (*s).into()).collect();
+                ui.global::<FolderState>().set_subfolders(std::rc::Rc::new(slint::VecModel::from(defaults)).into());
+                save_folder_settings(&ui);
+            }
+        }
+    });
+
     ui.global::<FolderState>().on_create_folders({
         let ui_handle = ui.as_weak();
         move || {
@@ -1296,7 +1377,9 @@ fn main() -> Result<(), slint::PlatformError> {
                     return;
                 }
 
-                match folder_generator::create_project_folder(&project_name, &target, &template) {
+                let subs = get_subfolders_vec(&ui);
+                let subs_refs: Vec<&str> = subs.iter().map(|s| s.as_str()).collect();
+                match folder_generator::create_project_folder(&project_name, &target, &template, &subs_refs) {
                     Ok(root) => {
                         fs.set_project_name("".into());
                         fs.set_project_name_valid(false);
