@@ -545,6 +545,9 @@ fn main() -> Result<(), slint::PlatformError> {
     // ==========================================
     ui.global::<UpdateState>().set_app_version(env!("CARGO_PKG_VERSION").into());
 
+    // Beim Start automatisch nach Updates suchen
+    updater::spawn_check(ui.as_weak());
+
     ui.global::<UpdateState>().on_check_for_update({
         let ui_handle = ui.as_weak();
         move || {
