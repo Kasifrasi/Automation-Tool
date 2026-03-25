@@ -1,11 +1,9 @@
-name: Build Windows Release
+name: Release
 
 on:
   push:
     tags:
       - "v*"
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -24,7 +22,6 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
-      # Caching beschleunigt zukünftige Builds enorm
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
         with:
@@ -32,26 +29,19 @@ jobs:
           cache-on-failure: true
 
       - name: Build GUI
-        # Baut nur die GUI-Anwendung im Release-Modus
         run: cargo build --release -p gui
 
-      # Lädt die fertige .exe Datei hoch, damit du sie herunterladen kannst
       - name: Upload Windows Artifact
-        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: windows-build
           path: target/release/gui.exe
           if-no-files-found: error
 
-      # Umbenennen damit self_update das Asset anhand des Target-Triples findet
       - name: Rename artifact
-        if: startsWith(github.ref, 'refs/tags/')
         run: cp target/release/gui.exe target/release/gui-x86_64-pc-windows-msvc.exe
 
-      # Erstellt automatisch ein GitHub Release und lädt die .exe hoch
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: target/release/gui-x86_64-pc-windows-msvc.exe
